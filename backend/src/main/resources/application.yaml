@@ -1,0 +1,31 @@
+spring:
+  data:
+    redis:
+      host:  localhost
+      port:  6379
+      password:  
+      database:  0
+      ssl:
+        enabled:  true
+      lettuce:
+        pool:
+          enabled:  true
+          max-active: 8  
+  datasource:
+    url: jdbc:mysql://localhost:3306/grade_manage?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 13032637048
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none # 开发时推荐 update，生产用 validate/none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+jwt:
+  secret: "mySuperSecretKeyThatIsAtLeast256BitsLongForHS256Algorithm123!"  # JWT签名密钥，建议至少32字符
+  expire-time: 7200000    # token过期时间（毫秒），默认2小时：2 * 60 * 60 * 1000 = 7200000
+  refresh-time: 604800000 # token刷新时间（毫秒），默认7天：7 * 24 * 60 * 60 * 1000 = 604800000
+  issure: "school-system" # token发行者
