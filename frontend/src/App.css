@@ -1,0 +1,14 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: content-box;
+
+}
+
+/* 应用主题变量 */
+body {
+  line-height: 1.5rem;
+  height: 100%;
+  width: 100%;
+
+}

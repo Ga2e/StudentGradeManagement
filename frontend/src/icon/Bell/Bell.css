@@ -1,0 +1,73 @@
+#bell-body {
+
+  transform-origin: top center;
+}
+
+#bell-clapper {
+  transform-origin: top center;
+  transition-delay: 0.25s;
+}
+
+.bell-swing #bell-body {
+  animation: body-swing 1s ease-in-out forwards;
+
+}
+
+.bell-swing #bell-clapper {
+  animation: clapper-swing 1s ease-in-out forwards;
+
+
+}
+
+
+@keyframes body-swing {
+
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  25% {
+    rotate: -12deg;
+  }
+
+  50% {
+    rotate: 12deg;
+  }
+
+  75% {
+    rotate: -9deg;
+  }
+
+  90% {
+
+    rotate: 3deg;
+  }
+}
+
+@keyframes clapper-swing {
+
+  0%,
+  25%,
+  50%,
+  75%,
+  100% {
+    transform: rotate(0deg);
+
+  }
+
+  38% {
+    transform: rotate(-3deg);
+  }
+
+
+  68% {
+    transform: rotate(3deg);
+  }
+
+  98% {
+    transform: rotate(-1deg);
+  }
+
+
+}
