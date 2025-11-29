@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/course")
@@ -72,8 +73,8 @@ public class CourseController {
 
   }
 
-  @PutMapping("/")
-  public ApiResult<?> updateById(@Valid CourseUpdateDTO courseUpdateDTO) {
+  @PutMapping()
+  public ApiResult<?> updateById(@RequestBody @Valid CourseUpdateDTO courseUpdateDTO) {
     try {
       courseService.update(courseUpdateDTO);
       return ApiResult.success();
@@ -84,7 +85,7 @@ public class CourseController {
   }
 
   @PostMapping()
-  public ApiResult<?> add(@Valid CourseAddDTO courseAddDTO) {
+  public ApiResult<?> add(@RequestBody @Valid CourseAddDTO courseAddDTO) {
     try {
       courseService.add(courseAddDTO);
       return ApiResult.success();
@@ -95,7 +96,7 @@ public class CourseController {
   }
 
   @PostMapping("/elect")
-  public ApiResult<?> electCourse(ElectCourseDTO electCourseDTO) {
+  public ApiResult<?> electCourse(@RequestBody ElectCourseDTO electCourseDTO) {
     try {
       courseService.electCourse(electCourseDTO);
       return ApiResult.success();

@@ -9,7 +9,6 @@ import org.ga2e.project.module.Institute.mapper.decorator.InstituteDecorator;
 import org.ga2e.project.module.Institute.resp.InstituteResp;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
 @Mapper(componentModel = "spring", uses = InstituteDecorator.class)
@@ -24,6 +23,8 @@ public interface InstituteMapper {
 
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "professionals", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+
   public Institute UpdateToEntity(InstituteUpdateDTO instituteUpdateDTO);
 
   public List<Institute> listAddDTOToEntitys(List<InstituteAddDTO> instituteAddDTOs);

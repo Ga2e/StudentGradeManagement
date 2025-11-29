@@ -6,6 +6,7 @@ import org.ga2e.project.module.User.entity.User;
 import org.ga2e.project.module.User.repo.UserRepo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -21,10 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.RequiredArgsConstructor;
 
@@ -42,7 +39,7 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(configurationSource()))
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests((request) -> request
-            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
             .anyRequest().permitAll())
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .formLogin(form -> form.disable())
@@ -57,6 +54,9 @@ public class SecurityConfig {
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:5173"));
+    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    corsConfiguration.setAllowedHeaders(List.of("*"));
+    corsConfiguration.setAllowCredentials(true); // 允许携带 cookie
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", corsConfiguration);
     return source;

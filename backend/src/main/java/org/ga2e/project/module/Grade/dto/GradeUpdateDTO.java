@@ -9,8 +9,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GradeAddDTO {
 
+public class GradeUpdateDTO {
+
+  private Long id;
   private Long studentId;
 
   private Long courseId;

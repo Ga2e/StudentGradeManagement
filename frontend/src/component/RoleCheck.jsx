@@ -3,6 +3,7 @@ import { usePermissionContext } from "../context/Permission"
 
 const RoleCheck = ({ children, required = [] }) => {
   const { role, _ } = usePermissionContext()
+  console.log(role)
   if (!isSignIn(role) || !required.includes(role)) {
     return <Navigate to="/login" replace></Navigate>
 

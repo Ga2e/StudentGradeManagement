@@ -7,18 +7,12 @@ import org.ga2e.project.module.User.entity.Role;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.Optional;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
 import org.ga2e.project.module.User.entity.User;
-import org.ga2e.project.module.User.entity.Permission.PermissionBuilder;
-import org.ga2e.project.module.User.entity.Permission.PermissionBuilder;
-import org.ga2e.project.module.User.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;

@@ -1,8 +1,6 @@
 package org.ga2e.project.module.Grade.resp;
 
-import java.math.BigDecimal;
-
-import org.ga2e.project.module.Course.resp.CourseResp;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,9 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GradeResp {
-  private Long id;
-  private CourseResp course;
-  private BigDecimal score;
-
+public class StudentGradeResp {
+  private List<GradeResp> majors;
+  private List<GradeResp> electives;
 }

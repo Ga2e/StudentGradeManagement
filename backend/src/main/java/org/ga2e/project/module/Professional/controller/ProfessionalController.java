@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.module.Professional.dto.ProfessionalAddDTO;
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/professional")
 @RequiredArgsConstructor
+@Slf4j
 public class ProfessionalController {
 
   private final ProfessionalService professionalService;
@@ -33,7 +36,7 @@ public class ProfessionalController {
    */
 
   @GetMapping
-  public ApiResult<?> getAllInstitute() {
+  public ApiResult<?> getAllProfessional() {
     try {
       return ApiResult.success(professionalService.findAll());
     } catch (Exception e) {
@@ -73,7 +76,7 @@ public class ProfessionalController {
   }
 
   @PutMapping("/")
-  public ApiResult<?> updateById(@Valid ProfessionalUpdateDTO professionalUpdateDTO) {
+  public ApiResult<?> updateById(@RequestBody @Valid ProfessionalUpdateDTO professionalUpdateDTO) {
     try {
       professionalService.update(professionalUpdateDTO);
       return ApiResult.success();
@@ -84,7 +87,7 @@ public class ProfessionalController {
   }
 
   @PostMapping()
-  public ApiResult<?> add(@Valid ProfessionalAddDTO professionalAddDTO) {
+  public ApiResult<?> add(@RequestBody @Valid ProfessionalAddDTO professionalAddDTO) {
     try {
       professionalService.add(professionalAddDTO);
       return ApiResult.success();

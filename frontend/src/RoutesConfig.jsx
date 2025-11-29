@@ -2,9 +2,11 @@ import { Outlet, Route, Routes } from "react-router";
 import Login from "./pages/Login";
 import MainPage from "./pages/MainPage";
 import RoleCheck from "./component/RoleCheck";
-import { ANY, STUDENT } from "./constant/Role";
-import Profile from "./component/Profile";
+import { ADMIN, ANY, STUDENT } from "./constant/Role";
 import StudentProfile from "./pages/student/StudentProfile";
+import Institute from "./pages/admin/Institute";
+import Professional from "./pages/admin/Professional";
+import Class from "./pages/admin/Class";
 
 
 const RoutesConfig = () => {
@@ -12,33 +14,54 @@ const RoutesConfig = () => {
     <Routes>
 
       <Route path="login" element={<Login></Login>}></Route>
+
       <Route path="/" element={
         <RoleCheck required={ANY}>
-          <Outlet />
-        </RoleCheck>
-      }>
 
+          <MainPage>
+            <Outlet></Outlet>
+          </MainPage>
+        </RoleCheck>}>
 
-        <Route path="main" element={
+        <Route path="studentProfile" element={
           <RoleCheck required={STUDENT}>
-            <MainPage>
-              <Outlet></Outlet>
-
-            </MainPage>
+            <StudentProfile></StudentProfile>
           </RoleCheck>
         }>
-
-          <Route path="profile" element={<StudentProfile></StudentProfile>}>
-          </Route>
+        </Route>
 
 
+        <Route path="institute" element={
+          <RoleCheck required={ADMIN}>
+
+            <Institute></Institute>
+
+          </RoleCheck>
+        }>
+        </Route>
+        <Route path="professional" element={
+          <RoleCheck required={ADMIN}>
+
+            <Professional></Professional>
+
+          </RoleCheck>
+        }>
+        </Route>
+        <Route path="class" element={
+          <RoleCheck required={ADMIN}>
+
+            <Class></Class>
+
+          </RoleCheck>
+        }>
         </Route>
 
 
 
 
       </Route>
-    </Routes>
+
+    </Routes >
 
   )
 }

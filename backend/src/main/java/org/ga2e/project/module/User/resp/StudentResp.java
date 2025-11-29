@@ -1,7 +1,6 @@
 package org.ga2e.project.module.User.resp;
 
 import org.ga2e.project.module.Student.entity.StudentProfile;
-import org.ga2e.project.module.User.entity.User;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

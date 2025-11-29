@@ -1,0 +1,29 @@
+Grade Module:
+  学生添加成绩： 关联学生
+
+  findGradesByClassId
+  
+  {
+    classId -> MajorsGrade -> ...
+    唯一返回Major
+  }
+  findMajorGradeByStudenId
+  {
+    根据StudentId -> Class -> Majors -> studentId + CourseId -> grade 
+    
+    }
+  findElectiveGradeBtStudentId{
+        根据StudentId -> Elective Course -> courseId + student -> grade   
+
+    }
+
+
+
+Student Module:
+  CURD
+  batchAdd 
+Teacher Module:
+  CURD batchAdd 
+
+
+

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import Profile from "../../component/Profile"
+import Profile from "../../pages/Profile.jsx"
 
 
 const StudentProfile = () => {

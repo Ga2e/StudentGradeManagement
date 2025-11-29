@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.module.Institute.dto.InstituteAddDTO;
 import org.ga2e.project.module.Institute.dto.InstituteUpdateDTO;
-import org.ga2e.project.module.Institute.entity.Institute;
 import org.ga2e.project.module.Institute.resp.InstituteResp;
 import org.ga2e.project.module.Institute.service.InstituteService;
 import org.springframework.data.domain.Page;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -75,8 +75,8 @@ public class InstituteController {
 
   }
 
-  @PutMapping("/")
-  public ApiResult<?> updateById(@Valid InstituteUpdateDTO instituteUpdateDTO) {
+  @PutMapping()
+  public ApiResult<?> updateById(@RequestBody @Valid InstituteUpdateDTO instituteUpdateDTO) {
     try {
       instituteService.update(instituteUpdateDTO);
       return ApiResult.success();

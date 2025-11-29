@@ -8,13 +8,14 @@ import org.ga2e.project.module.Class.entity.Class;
 import org.ga2e.project.module.Class.mapper.decorator.ClassDecorator;
 import org.ga2e.project.module.Class.resp.ClassResp;
 import org.ga2e.project.module.Course.entiry.MajorCourse;
+import org.ga2e.project.module.Professional.mapper.decorator.ProfessionalDecorator;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import org.springframework.data.domain.Page;
 
-@Mapper(componentModel = "spring", uses = ClassDecorator.class)
+@Mapper(componentModel = "spring", uses = { ClassDecorator.class, ProfessionalDecorator.class })
 public interface ClassMapper {
 
   ClassMapper INSTANCE = Mappers.getMapper(ClassMapper.class);
@@ -34,7 +35,7 @@ public interface ClassMapper {
 
   public List<Class> listAddDTOToEntitys(List<ClassAddDTO> classAddDTOs);
 
-  @Mapping(target = "professionalId", source = "professional.id")
+  @Mapping(target = "professional", source = "professional")
   @Mapping(target = "courseIds", source = "courses", qualifiedByName = "majorCourseToCourseId")
   public ClassResp entityToResp(Class clazz);
 

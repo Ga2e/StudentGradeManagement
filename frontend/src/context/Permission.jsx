@@ -5,7 +5,7 @@ const PermissionContext = createContext()
 
 
 export const PermissionProvider = ({ children }) => {
-  const [role, setRole] = useState(STUDENT)
+  const [role, setRole] = useState(localStorage.getItem("role"))
   return (
     <PermissionContext.Provider value={{ role, setRole }}>
 

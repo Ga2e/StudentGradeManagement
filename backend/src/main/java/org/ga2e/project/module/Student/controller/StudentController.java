@@ -4,7 +4,7 @@ package org.ga2e.project.module.Student.controller;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface StudentService {
+public interface StudentController {
 
   void addStudent();
 

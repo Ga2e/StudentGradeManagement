@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.common.utils.JwtUtil;
-import org.ga2e.project.module.Teacher.entity.TeacherProfile;
 import org.ga2e.project.module.User.dto.LoginDTO;
 import org.ga2e.project.module.User.entity.User;
 import org.ga2e.project.module.User.mapper.UserMapper;

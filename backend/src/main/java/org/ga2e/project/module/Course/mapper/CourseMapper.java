@@ -45,6 +45,7 @@ public interface CourseMapper {
   // ElectiveCourse
 
   @Mapping(target = "id", ignore = true)
+  @Mapping(target = "term", source = "termId")
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "user", source = "userId")
@@ -53,21 +54,29 @@ public interface CourseMapper {
 
   // MajorCourse
 
-  @Mapping(target = "classId", source = "class.id")
+  @Mapping(target = "classId", source = "clazz.id")
   @Mapping(target = "courseId", source = "course.id")
   @Mapping(target = "termId", source = "term.id")
   MajorCourseResp entityToMajorResp(MajorCourse majorCourse);
 
   List<MajorCourseResp> entitysToMajorResps(List<MajorCourse> majorCourse);
 
-  @Mapping(target = "class", source = "classId")
+  @Mapping(target = "id", ignore = true)
+
+  @Mapping(target = "clazz", source = "classId")
   @Mapping(target = "course", source = "courseId")
   @Mapping(target = "term", source = "termId")
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+
   MajorCourse bindDtoToEntity(BindDTO bindMajorToEntity);
 
-  @Mapping(target = "class", source = "classId")
+  @Mapping(target = "clazz", source = "classId")
   @Mapping(target = "course", source = "courseId")
   @Mapping(target = "term", source = "termId")
+  @Mapping(target = "createdAt", ignore = true)
+  @Mapping(target = "updatedAt", ignore = true)
+
   MajorCourse updateBindDtoToEntity(UpdateBindDTO updateBindDTO);
 
 }

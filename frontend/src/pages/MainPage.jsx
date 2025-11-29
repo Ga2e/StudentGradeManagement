@@ -82,41 +82,57 @@ const MainPage = () => {
     setCollapsed(!collapsed)
   }
   return (
-    <Layout style={{ transition: 'all 2s ease', height: '100%' }}>
-      <Header style={{
-        display: "flex",
-        alignItems: 'center',
-
-      }}>
-        <Title level={2} style={{ fontWeight: 'bolder', marginBottom: 0, marginLeft: 0, marginRight: 'auto' }}>Easy Study</Title>
+    <Layout style={{ height: '100vh', transition: 'all 0.3s ease' }}>
+      <Header style={{ display: "flex", alignItems: 'center', padding: '0 24px' }}>
+        <Title level={2} style={{ fontWeight: 'bolder', margin: 0, marginRight: 'auto' }}>
+          Easy Study
+        </Title>
         <Flex align="center" gap={15}>
-          <Bell></Bell>
-          <ThemeSwitch></ThemeSwitch>
+          <Bell />
+          <ThemeSwitch />
         </Flex>
-
       </Header>
 
-
-      <Layout>
-        <Sider width={200} onCollapse={handleCollapse} collapsed={collapsed} collapsible >
-          <Menu inlineCollapsed={collapsed} items={items} mode='inline' style={{ height: '100%', overflowY: 'scroll', scrollbarWidth: 'none', background: token.Layout.siderBg }}>
-
-          </Menu>
+      <Layout hasSider>
+        <Sider
+          width={200}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={handleCollapse}
+        >
+          <Menu
+            inlineCollapsed={collapsed}
+            items={items}
+            mode="inline"
+            style={{ height: '100%', background: token.Layout?.siderBg }}
+          />
         </Sider>
-        <Layout style={{
-          padding: 24,
-          margin: 0,
-          minHeight: 280,
-        }}>
-          <Breadcrumb style={{ marginBottom: 15 }}>
-            <Breadcrumb.Item>sample</Breadcrumb.Item>
+
+        {/* 关键修改开始：让内容区域真正撑满 */}
+        <Layout style={{ padding: 24, display: 'flex', flexDirection: 'column' }}>
+          <Breadcrumb style={{ marginBottom: 16 }}>
           </Breadcrumb>
-          <Content style={{ borderRadius: 15, background: token.colorContentBg, scrollbarWidth: 'none' }}>
-            <Outlet></Outlet>
+
+          {/* 最关键的一层：flex: 1 + overflow: hidden */}
+          <Content
+            style={{
+              flex: 1,
+              overflow: 'hidden',                    // 禁止 Content 自己滚动
+              borderRadius: 15,
+              background: token.colorContentBg,
+              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <Outlet />                               {/* 你的 Institute 组件就在这里 */}
           </Content>
         </Layout>
+        {/* 关键修改结束 */}
       </Layout>
     </Layout >
+
+
 
   )
 }
