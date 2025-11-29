@@ -8,7 +8,31 @@
   - 权限认证:   Spring Security
   - 数据库:     Spring JPA + Mysql + Redis 
   - AI:         Spring AI
+### Backend Project Construct
+```
+```
 
+.
+├── common
+│   ├── constant        
+│   ├── exception       // 自定义异常
+│   ├── response        // 响应体
+│   └── utils           // 工具类
+├── config              // 配置类
+└── module              // 模块
+    ├── Captcha
+    ├── Class
+    ├── Course
+    ├── Grade
+    ├── Institute
+    ├── Professional
+    ├── Student
+    ├── Teacher
+    └── User
+
+```
+
+```
 ### Require
   - Java:       21
   - Maven:      3^
