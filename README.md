@@ -10,7 +10,6 @@
   - AI:         Spring AI
 ### Backend Project Construct
 ```
-```
 
 .
 ├── common
@@ -32,7 +31,6 @@
 
 ```
 
-```
 ### Require
   - Java:       21
   - Maven:      3^
