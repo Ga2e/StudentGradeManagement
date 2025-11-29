@@ -24,7 +24,7 @@ export const addProfessional = async (data) => {
 };
 
 /**
- * 修改专业（PUT + 传 {id, name}）
+ * 修改专业（PUT + 传 {id, name,instituteId}）
  */
 export const updateProfessional = async (data) => {
   const res = await instance.put("/professional/", data);
