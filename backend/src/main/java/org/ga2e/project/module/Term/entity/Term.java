@@ -1,4 +1,4 @@
-package org.ga2e.project.module.Course.entiry;
+package org.ga2e.project.module.Term.entity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

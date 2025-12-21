@@ -17,7 +17,7 @@ import {
   getPages,
   updateInstitute,
 } from "../../service/institute";
-import FormModal from "../../context/FormModal";
+import FormModal from "../../component/FormModal";
 
 const columns = [
   {
@@ -80,9 +80,18 @@ const Institute = () => {
 
   // ========== 删除 ==========
   const deleteAction = async () => {
-    await deleteInstituteById(selectRowKeys[0]);
-    messageApi.success("删除成功");
-    refresh();
+    await deleteInstituteById(selectRowKeys[0])
+      .then(resp => {
+        console.log(resp)
+        if (resp.code === 200) {
+
+          messageApi.success("删除成功");
+        } else {
+
+          messageApi.error(resp.message);
+        }
+      })
+    refresh()
   };
 
   // ========== 新增 ==========

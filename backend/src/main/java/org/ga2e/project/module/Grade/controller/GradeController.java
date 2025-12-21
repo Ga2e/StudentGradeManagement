@@ -1,15 +1,19 @@
 package org.ga2e.project.module.Grade.controller;
 
+import java.util.List;
+
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.module.Grade.dto.GradeAddDTO;
 import org.ga2e.project.module.Grade.dto.GradeUpdateDTO;
 import org.ga2e.project.module.Grade.resp.GradeResp;
 import org.ga2e.project.module.Grade.resp.StudentGradeResp;
 import org.ga2e.project.module.Grade.service.GradeService;
+import org.ga2e.project.module.User.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +37,9 @@ public class GradeController {
   public ApiResult<?> getAllGrade() {
     try {
       return ApiResult.success(gradeService.findAll());
-    } catch (Exception e) {
+    } catch (
+
+    Exception e) {
       return ApiResult.error(e.getMessage());
     }
   }
@@ -93,7 +99,7 @@ public class GradeController {
 
   }
 
-  @GetMapping("/student/{id}")
+  @GetMapping("/admin/search")
   public ApiResult<?> findStudentGrade(@PathVariable Long id) {
 
     try {
@@ -102,6 +108,17 @@ public class GradeController {
           .majors(gradeService.findMajorGradesByStudentId(id))
           .build();
       return ApiResult.success(studentGradeResp);
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
+
+  }
+
+  @GetMapping("/me")
+  public ApiResult<?> findMeGrade(Authentication authentication) {
+    try {
+      List<GradeResp> grades = gradeService.findMeGrade(authentication);
+      return ApiResult.success(grades);
     } catch (Exception e) {
       return ApiResult.error(e.getMessage());
     }

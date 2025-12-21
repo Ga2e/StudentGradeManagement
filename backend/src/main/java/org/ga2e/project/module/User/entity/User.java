@@ -7,10 +7,12 @@ import java.util.List;
 
 import org.ga2e.project.module.Student.entity.StudentProfile;
 import org.ga2e.project.module.Teacher.entity.TeacherProfile;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +22,8 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -58,16 +62,17 @@ public class User implements UserDetails {
   @JoinColumn(name = "role_id")
   private Role role;
 
+  @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  @OneToOne(mappedBy = "user")
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
   private StudentProfile studentProfile;
 
-  @OneToOne(mappedBy = "user")
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
   private TeacherProfile teacherProfile;
 
   @Override
@@ -87,4 +92,14 @@ public class User implements UserDetails {
     return getCode();
   }
 
+  @PrePersist
+  private void onCreate() {
+    setCreatedAt(LocalDateTime.now());
+    setUpdatedAt(LocalDateTime.now());
+  }
+
+  @PreUpdate
+  private void updateTime() {
+    setUpdatedAt(LocalDateTime.now());
+  }
 }

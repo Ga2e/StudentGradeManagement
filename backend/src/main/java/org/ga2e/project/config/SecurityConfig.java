@@ -57,6 +57,7 @@ public class SecurityConfig {
     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     corsConfiguration.setAllowedHeaders(List.of("*"));
     corsConfiguration.setAllowCredentials(true); // 允许携带 cookie
+    corsConfiguration.setExposedHeaders(List.of("x-captcha-key"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", corsConfiguration);
     return source;
@@ -64,32 +65,21 @@ public class SecurityConfig {
 
   @Bean
   UserDetailsService userDetailsService() {
-    return new UserDetailsService() {
+    return new CustomUserService();
+  }
 
-      // 支持多方式登陆； 邮箱，手机号，工号/学号
-      @Override
-      public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user;
-        user = userRepo.findByPhone(username);
-        if (user != null) {
-          return user;
-        }
+  class CustomUserService implements UserDetailsService {
+    // 支持多方式登陆； 邮箱，手机号，工号/学号
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+      User user;
+      user = userRepo.findByPhone(username)
+          .orElseGet(() -> userRepo.findByCode(username)
+              .orElseGet(() -> userRepo.findByEmail(username)
+                  .orElseThrow(() -> new UsernameNotFoundException("user not found"))));
+      return user;
+    }
 
-        user = userRepo.findByCode(username);
-        if (user != null) {
-          return user;
-        }
-
-        user = userRepo.findByEmail(username);
-        if (user != null) {
-          return user;
-        }
-
-        throw new UsernameNotFoundException("user not found");
-
-      }
-
-    };
   }
 
   @Bean

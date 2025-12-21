@@ -7,10 +7,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 @Builder
-public class LoginResp {
+public class LoginResp<T extends UserResp> {
 
   private String token;
   private String tokenType;
-  private UserResp user;
+  private T user;
 
 }

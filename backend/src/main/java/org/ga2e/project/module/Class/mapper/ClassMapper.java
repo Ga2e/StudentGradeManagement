@@ -18,8 +18,6 @@ import org.springframework.data.domain.Page;
 @Mapper(componentModel = "spring", uses = { ClassDecorator.class, ProfessionalDecorator.class })
 public interface ClassMapper {
 
-  ClassMapper INSTANCE = Mappers.getMapper(ClassMapper.class);
-
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)

@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.common.utils.JwtUtil;
+import org.ga2e.project.module.Student.mapper.StudentMapper;
 import org.ga2e.project.module.User.dto.LoginDTO;
 import org.ga2e.project.module.User.entity.User;
 import org.ga2e.project.module.User.mapper.UserMapper;
@@ -40,6 +41,7 @@ public class AuthenticateServiceImp implements AuthenticateService {
   private final AuthenticationManager authenticationManager;
   private final JwtUtil jwtUtil;
   private final UserMapper userMapper;
+  private final StudentMapper studentMapper;
   private final RedisTemplate redisTemplate;
 
   @Override
@@ -62,24 +64,34 @@ public class AuthenticateServiceImp implements AuthenticateService {
     String jti = UUID.randomUUID().toString();
     String jwt = jwtUtil.generateJwt(user, jti);
 
-    LoginResp loginResp = LoginResp.builder()
-        .token(jwt)
-        .tokenType("Bearer")
-        .build();
-
     // 根据角色构建对应的响应，其中Profile 为特有属性
     if (user.getRole().getName().contains("teacher")) {
-      TeacherResp userResp = userMapper.toTeacherResp(user);
-      loginResp.setUser(userResp);
+      LoginResp<TeacherResp> loginResp = LoginResp.<TeacherResp>builder()
+          .token(jwt)
+          .tokenType("Bearer")
+          .build();
+      return null;
     } else if (user.getRole().getName().contains("student")) {
-      StudentResp userResp = userMapper.toStudentResp(user);
+      LoginResp<StudentResp> loginResp = LoginResp.<StudentResp>builder()
+          .token(jwt)
+          .tokenType("Bearer")
+          .build();
+
+      StudentResp userResp = studentMapper.toStudentResp(user);
       loginResp.setUser(userResp);
+      return ApiResult.success(loginResp);
+
     } else {
+      LoginResp loginResp = LoginResp.builder()
+          .token(jwt)
+          .tokenType("Bearer")
+          .build();
+
       UserResp resp = userMapper.toResp(user);
       loginResp.setUser(resp);
+      return ApiResult.success(loginResp);
     }
 
-    return ApiResult.success(loginResp);
   }
 
   @Override

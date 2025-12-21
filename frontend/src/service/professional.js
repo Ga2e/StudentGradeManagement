@@ -12,7 +12,7 @@ export const getProfessionalPage = async ({ pageNum = 1, pageSize = 10 }) => {
       sort: "id,asc",
     },
   });
-  return res.data; // { content: [...], totalElements: 88 }
+  return res.data.data; // { content: [...], totalElements: 88 }
 };
 
 /**
@@ -20,7 +20,7 @@ export const getProfessionalPage = async ({ pageNum = 1, pageSize = 10 }) => {
  */
 export const addProfessional = async (data) => {
   const res = await instance.post("/professional", data);
-  return res.data;
+  return res.data.data;
 };
 
 /**
@@ -28,7 +28,7 @@ export const addProfessional = async (data) => {
  */
 export const updateProfessional = async (data) => {
   const res = await instance.put("/professional/", data);
-  return res.data;
+  return res.data.data;
 };
 
 /**
@@ -36,5 +36,5 @@ export const updateProfessional = async (data) => {
  */
 export const deleteProfessional = async (id) => {
   const res = await instance.delete(`/professional/${id}`);
-  return res.data;
+  return res.data.data;
 };

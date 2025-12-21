@@ -22,7 +22,7 @@ instance.interceptors.request.use(
 );
 
 instance.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   (error) => {
     // 统一错误处理
     return Promise.reject(error);

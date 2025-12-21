@@ -14,10 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 
-@RequestMapping("/captcha")
+@RequestMapping("/api/captcha")
 public class CaptchaController {
 
   @Autowired
@@ -32,7 +33,7 @@ public class CaptchaController {
   }
 
   @PostMapping("/verify")
-  public ApiResult<?> verifyCaptcha(@Valid VerifyDTO verifyDTO) throws Exception {
+  public ApiResult<?> verifyCaptcha(@RequestBody @Valid VerifyDTO verifyDTO) throws Exception {
     return captchaService.verifyCapthca(verifyDTO);
   }
 

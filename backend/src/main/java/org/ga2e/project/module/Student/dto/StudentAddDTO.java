@@ -17,6 +17,6 @@ public class StudentAddDTO {
 
   private String password;
 
-  private StudentProfileAddDTO studentProfileAddDTO;
+  private StudentProfileAddDTO studentProfile;
 
 }

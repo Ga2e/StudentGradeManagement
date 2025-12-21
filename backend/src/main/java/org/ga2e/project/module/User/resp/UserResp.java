@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
 @Data
 public class UserResp {

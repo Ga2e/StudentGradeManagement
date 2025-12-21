@@ -11,7 +11,6 @@ import {
   Select,
   Space,
   Table,
-  Tag,
   Typography,
 } from "antd";
 import {
@@ -23,7 +22,7 @@ import {
 } from "../../service/class";
 import { getProfessionalPage } from "../../service/professional"; // 复用专业接口
 import { getAllCourse } from "../../service/course"; // 你要有这个接口获取所有课程
-import FormModal from "../../components/FormModal";
+import FormModal from "../../component/FormModal";
 
 const { Option } = Select;
 
@@ -50,7 +49,7 @@ const columns = [
   },
 ];
 
-const ClassPage = () => {
+const Class = () => {
   const selectedRowRef = useRef(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 

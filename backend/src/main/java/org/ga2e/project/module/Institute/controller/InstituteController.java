@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -66,12 +65,8 @@ public class InstituteController {
 
   @DeleteMapping("/{id}")
   public ApiResult<?> deleteById(@PathVariable Long id) {
-    try {
-      instituteService.deleteById(id);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    instituteService.deleteById(id);
+    return ApiResult.success();
 
   }
 

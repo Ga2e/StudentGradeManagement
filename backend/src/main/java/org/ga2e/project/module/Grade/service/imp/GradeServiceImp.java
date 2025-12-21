@@ -18,6 +18,7 @@ import org.ga2e.project.module.User.entity.User;
 import org.ga2e.project.module.User.repo.UserRepo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -126,6 +127,13 @@ public class GradeServiceImp implements GradeService {
     List<Grade> grades = gradeRepo.findByCourseId(id);
     return gradeMapper.entitysToResps(grades);
 
+  }
+
+  @Override
+  public List<GradeResp> findMeGrade(Authentication authentication) {
+    User user = (User) authentication.getPrincipal();
+    List<Grade> byStudentId = gradeRepo.findByStudentId(user.getId());
+    return gradeMapper.entitysToResps(byStudentId);
   }
 
 }

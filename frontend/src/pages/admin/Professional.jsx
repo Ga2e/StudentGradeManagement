@@ -18,8 +18,9 @@ import {
   getProfessionalPage,
   updateProfessional,
 } from "../../service/professional.js";
-import FormModal from "../../context/FormModal";
+import FormModal from "../../component/FormModal";
 import { getAllInstitute } from "../../service/institute.js";
+import { useMessage } from "../../context/MessageProvider.jsx";
 const columns = [
   {
     title: "ID",
@@ -42,9 +43,9 @@ const columns = [
 
 const Professional = () => {
   // 选中的行（只读）
-  const selectedRowRef = useRef(null);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-
+  const selectedRowRef = useRef(null)
+  const [selectedRowKeys, setSelectedRowKeys] = useState([])
+  const { messageApi } = useMessage()
   // 表单实例
   const [addForm] = Form.useForm();
   const [updateForm] = Form.useForm();
@@ -52,7 +53,6 @@ const Professional = () => {
   // 全局状态
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
 
   // 分页 + 数据
   const [pageNum, setPageNum] = useState(1);
@@ -124,7 +124,6 @@ const Professional = () => {
   // 新增
   const handleAdd = async () => {
     institute.current = await instituteLoad()
-    console.log(institute.current)
     setAddOpen(true)
   };
   const handleAddOk = async () => {
@@ -189,7 +188,6 @@ const Professional = () => {
 
   return (
     <>
-      {contextHolder}
 
       <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         {/* 顶部栏 */}

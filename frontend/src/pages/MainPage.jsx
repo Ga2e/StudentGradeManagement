@@ -4,74 +4,41 @@ import Sider from "antd/es/layout/Sider"
 import ThemeSwitch from "../component/ThemeSwitch";
 import Title from "antd/es/typography/Title";
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import Bell from "../icon/Bell/Bell";
+import { PermissionProvider, usePermissionContext } from "../context/Permission";
+import { ADMIN } from "../constant/Role";
 
-const items = [
+const adminItems = [
   {
-    key: 'sub1',
-    label: 'Navigation One',
-    children: [
-      {
-        key: 'g1',
-        label: 'Item 1',
-        type: 'group',
-        children: [
-          { key: '1', label: 'Option 1' },
-          { key: '2', label: 'Option 2' },
-        ],
-      },
-      {
-        key: 'g2',
-        label: 'Item 2',
-        type: 'group',
-        children: [
-          { key: '3', label: 'Option 3' },
-          { key: '4', label: 'Option 4' },
-        ],
-      },
-    ],
+    key: 'institute',
+    label: 'Institute',
   },
   {
-    key: 'sub2',
-    label: 'Navigation Two',
-    children: [
-      { key: '5', label: 'Option 5' },
-      { key: '6', label: 'Option 6' },
-      {
-        key: 'sub3',
-        label: 'Submenu',
-        children: [
-          { key: '7', label: 'Option 7' },
-          { key: '8', label: 'Option 8' },
-        ],
-      },
-    ],
+    key: 'professional',
+    label: 'Professional',
   },
   {
-    type: 'divider',
+    key: 'class',
+    label: 'Class',
   },
   {
-    key: 'sub4',
-    label: 'Navigation Three',
-    children: [
-      { key: '9', label: 'Option 9' },
-      { key: '10', label: 'Option 10' },
-      { key: '11', label: 'Option 11' },
-      { key: '12', label: 'Option 12' },
-    ],
+    key: 'course',
+    label: 'Course',
   },
   {
-    key: 'grp',
-    label: 'Group',
-    type: 'group',
-    children: [
-      { key: '13', label: 'Option 13' },
-      { key: '14', label: 'Option 14' },
-    ],
+    key: 'teacher',
+    label: 'Teacher',
   },
+
+
+
 ];
 
+const studentItems = [
+  {}
+
+]
 
 
 
@@ -81,6 +48,8 @@ const MainPage = () => {
   const handleCollapse = () => {
     setCollapsed(!collapsed)
   }
+  const nav = useNavigate()
+  const { role, _ } = usePermissionContext()
   return (
     <Layout style={{ height: '100vh', transition: 'all 0.3s ease' }}>
       <Header style={{ display: "flex", alignItems: 'center', padding: '0 24px' }}>
@@ -102,32 +71,31 @@ const MainPage = () => {
         >
           <Menu
             inlineCollapsed={collapsed}
-            items={items}
+            items={role === ADMIN ? adminItems : studentItems}
             mode="inline"
             style={{ height: '100%', background: token.Layout?.siderBg }}
+            onClick={(e) => nav(e.key)}
           />
         </Sider>
 
-        {/* 关键修改开始：让内容区域真正撑满 */}
-        <Layout style={{ padding: 24, display: 'flex', flexDirection: 'column' }}>
+
+        {/* 最关键的一层：flex: 1 + overflow: hidden */}
+        <Content
+          style={{
+            margin: '25px',
+            flex: 1,
+            overflow: 'hidden',                    // 禁止 Content 自己滚动
+            borderRadius: 15,
+            background: token.colorContentBg,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
           <Breadcrumb style={{ marginBottom: 16 }}>
           </Breadcrumb>
 
-          {/* 最关键的一层：flex: 1 + overflow: hidden */}
-          <Content
-            style={{
-              flex: 1,
-              overflow: 'hidden',                    // 禁止 Content 自己滚动
-              borderRadius: 15,
-              background: token.colorContentBg,
-              boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Outlet />                               {/* 你的 Institute 组件就在这里 */}
-          </Content>
-        </Layout>
+          <Outlet />                               {/* 你的 Institute 组件就在这里 */}
+        </Content>
         {/* 关键修改结束 */}
       </Layout>
     </Layout >

@@ -86,23 +86,15 @@ public class CourseController {
 
   @PostMapping()
   public ApiResult<?> add(@RequestBody @Valid CourseAddDTO courseAddDTO) {
-    try {
-      courseService.add(courseAddDTO);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    courseService.add(courseAddDTO);
+    return ApiResult.success();
 
   }
 
   @PostMapping("/elect")
   public ApiResult<?> electCourse(@RequestBody ElectCourseDTO electCourseDTO) {
-    try {
-      courseService.electCourse(electCourseDTO);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    courseService.electCourse(electCourseDTO);
+    return ApiResult.success();
 
   }
 

@@ -4,9 +4,9 @@ import instance from "./axios";
 /**
  * 分页查询班级
  */
-export const getClassPage = async ({ pageNum = 1, pageSize = 10 }) => {
+export const getClassPage = async ({ pageNum = 0, pageSize = 10 }) => {
   const res = await instance.get("/class/page", {
-    params: { page: pageNum, size: pageSize, sort: "id,asc" },
+    params: { page: pageNum - 1, size: pageSize, sort: "id,asc" },
   });
   return res.data.data; // { content: [...], totalElements: 66 }
 };

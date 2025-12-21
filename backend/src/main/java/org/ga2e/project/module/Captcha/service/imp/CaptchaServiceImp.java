@@ -63,7 +63,7 @@ public class CaptchaServiceImp implements CaptchaService {
 
   @Override
   public ApiResult<?> verifyCapthca(VerifyDTO verifyCaptchaDTO) {
-    System.out.println(verifyCaptchaDTO.getCaptchaKey());
+
     BoundValueOperations ops = redisTemplate.boundValueOps("verify:code:" + verifyCaptchaDTO.getCaptchaKey());
     String code = (String) ops.get();
     if (!code.equalsIgnoreCase(verifyCaptchaDTO.getCaptchaCode())) {

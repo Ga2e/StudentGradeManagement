@@ -7,6 +7,9 @@ import StudentProfile from "./pages/student/StudentProfile";
 import Institute from "./pages/admin/Institute";
 import Professional from "./pages/admin/Professional";
 import Class from "./pages/admin/Class";
+import CoursePage from "./pages/admin/Course";
+import Teacher from "./pages/admin/Teacher";
+import Course from "./pages/admin/Course";
 
 
 const RoutesConfig = () => {
@@ -51,6 +54,22 @@ const RoutesConfig = () => {
           <RoleCheck required={ADMIN}>
 
             <Class></Class>
+
+          </RoleCheck>
+        }>
+        </Route>
+        <Route path="course" element={
+          <RoleCheck required={ADMIN}>
+
+            <Course></Course>
+
+          </RoleCheck>
+        }>
+        </Route>
+        <Route path="teacher" element={
+          <RoleCheck required={ADMIN}>
+
+            <Teacher></Teacher>
 
           </RoleCheck>
         }>
