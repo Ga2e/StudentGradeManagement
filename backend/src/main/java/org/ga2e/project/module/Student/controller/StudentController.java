@@ -97,7 +97,7 @@ public class StudentController {
 
   }
 
-  @PutMapping("/")
+  @PutMapping()
   public ApiResult<?> updateStudent(@RequestBody @Valid StudentUpdateDTO studentUpdateDTO) {
     try {
       studentService.updateStudent(studentUpdateDTO);

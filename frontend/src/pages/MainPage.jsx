@@ -1,4 +1,4 @@
-import { Breadcrumb, Flex, Layout, Menu, Space, theme } from "antd"
+import { Breadcrumb, Button, Flex, Layout, Menu, Space, theme } from "antd"
 import { Content, Footer, Header } from "antd/es/layout/layout"
 import Sider from "antd/es/layout/Sider"
 import ThemeSwitch from "../component/ThemeSwitch";
@@ -8,6 +8,8 @@ import { Outlet, useNavigate } from "react-router";
 import Bell from "../icon/Bell/Bell";
 import { PermissionProvider, usePermissionContext } from "../context/Permission";
 import { ADMIN } from "../constant/Role";
+import { logout } from "../service/auth";
+import { useMessage } from "../context/MessageProvider";
 
 const adminItems = [
   {
@@ -30,13 +32,26 @@ const adminItems = [
     key: 'teacher',
     label: 'Teacher',
   },
+  {
+    key: 'student',
+    label: 'Student',
+  },
+  {
+    key: 'grade',
+    label: 'grade',
+  },
+
 
 
 
 ];
 
 const studentItems = [
-  {}
+  {
+    key: '/student/grade',
+    label: 'grade',
+  },
+
 
 ]
 
@@ -48,8 +63,23 @@ const MainPage = () => {
   const handleCollapse = () => {
     setCollapsed(!collapsed)
   }
+  const { messageApi } = useMessage()
   const nav = useNavigate()
   const { role, _ } = usePermissionContext()
+  const handleClick = async () => {
+
+    const resp = await logout()
+    console.log(resp.data)
+    if (resp.data.code === 200) {
+      localStorage.removeItem('role')
+      localStorage.removeItem('token')
+      nav("/login")
+    }
+    else {
+      messageApi.error(resp.data.message)
+    }
+
+  }
   return (
     <Layout style={{ height: '100vh', transition: 'all 0.3s ease' }}>
       <Header style={{ display: "flex", alignItems: 'center', padding: '0 24px' }}>
@@ -57,6 +87,9 @@ const MainPage = () => {
           Easy Study
         </Title>
         <Flex align="center" gap={15}>
+          <Button onClick={handleClick}>
+            logout
+          </Button>
           <Bell />
           <ThemeSwitch />
         </Flex>

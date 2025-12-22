@@ -23,6 +23,8 @@ import {
 import { getProfessionalPage } from "../../service/professional"; // 复用专业接口
 import { getAllCourse } from "../../service/course"; // 你要有这个接口获取所有课程
 import FormModal from "../../component/FormModal";
+import { getAllTerm } from "../../service/term";
+
 
 const { Option } = Select;
 
@@ -69,7 +71,7 @@ const Class = () => {
   // 下拉数据
   const [professionalList, setProfessionalList] = useState([]);
   const [courseList, setCourseList] = useState([]);
-
+  const [termList, setTermList] = useState([]);
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
@@ -94,10 +96,20 @@ const Class = () => {
   // 加载所有课程（用于多选）
   const loadCourses = async () => {
     try {
-      const res = await getAllCourse(); // 你需要有这个接口
-      setCourseList(res.data?.data || res.data || []);
+      const res = await getAllCourse();
+      console.log(res)
+      setCourseList(res || []);
     } catch {
       setCourseList([]);
+    }
+  };
+  const loadTerms = async () => {
+    try {
+      const res = await getAllTerm(); // 你已有的 /term 接口
+      setTermList(res || []);
+    } catch (err) {
+      setTermList([]);
+      messageApi.error("加载学期列表失败");
     }
   };
 
@@ -122,6 +134,7 @@ const Class = () => {
     refresh();
     loadProfessionals();
     loadCourses();
+    loadTerms()
   }, []);
 
   const handleSelectChange = (keys, rows) => {
@@ -299,24 +312,63 @@ const Class = () => {
         </Form>
       </FormModal>
 
+
+
+
       {/* 给班级添加课程 */}
-      <FormModal title="为班级添加课程" open={courseOpen} onCancel={() => setCourseOpen(false)} onSubmit={handleAddCourseOk} loading={confirmLoading}>
+      <FormModal
+        title="为班级添加课程"
+        open={courseOpen}
+        onCancel={() => setCourseOpen(false)}
+        onSubmit={handleAddCourseOk}
+        loading={confirmLoading}
+      >
         <Form form={courseForm} layout="vertical">
-          <Form.Item name="courseIds" label="选择课程" rules={[{ required: true }]}>
-            <Select mode="multiple" placeholder="请选择课程（可多选）">
-              {courseList.map(c => (
-                <Option key={c.id} value={c.id}>{c.name}</Option>
-              ))}
+          <div style={{ marginBottom: 16, fontWeight: "bold", color: "#1890ff" }}>
+            当前班级：{selectedRowRef.current?.name || "-"}
+          </div>
+
+          <Form.Item
+            name="courseIds"
+            label="选择课程"
+            rules={[{ required: true, message: "请选择至少一门课程" }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="请选择课程（可多选）"
+              loading={courseList.length === 0}
+            >
+              {courseList.map(c => {
+                return (
+                  <Option key={c.id} value={c.id}>
+                    {c.name} ({c.code})
+                  </Option>)
+              })}
             </Select>
           </Form.Item>
-          <Form.Item name="termId" label="所属学期" rules={[{ required: true }]}>
-            <Select placeholder="请选择学期">
-              <Option value={1}>2024-2025 学年第一学期</Option>
-              <Option value={2}>2024-2025 学年第二学期</Option>
+
+          <Form.Item
+            name="termId"
+            label="所属学期"
+            rules={[{ required: true, message: "请选择学期" }]}
+          >
+            <Select
+              placeholder="请选择学期"
+              loading={termList.length === 0}
+            >
+              {termList.map(term => (
+                <Option key={term.id} value={term.id}>
+                  {term.name}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>
       </FormModal>
+
+
+
+
     </>
   );
 };

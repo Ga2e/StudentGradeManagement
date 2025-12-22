@@ -18,31 +18,22 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RestController
-@RequestMapping("/term")
+@RequestMapping("/api/term")
 @RequiredArgsConstructor
 public class TermController {
 
   private final TermService termService;
 
-  /**
-   * 获取所有学期（不分页，用于下拉选）
-   */
   @GetMapping
   public ApiResult<List<TermResp>> getAllTerm() {
     return termService.getAll();
   }
 
-  /**
-   * 根据ID查询学期详情
-   */
   @GetMapping("/{id}")
   public ApiResult<TermResp> getById(@PathVariable Long id) {
     return termService.getById(id);
   }
 
-  /**
-   * 分页查询学期（可选，如果学期数据不多可不提供）
-   */
   @GetMapping("/page")
   public ApiResult<Page<TermResp>> pageQuery(
       @PageableDefault(size = 10, page = 1, sort = "startDate", direction = Sort.Direction.DESC) Pageable pageable) {

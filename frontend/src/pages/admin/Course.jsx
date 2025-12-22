@@ -24,6 +24,8 @@ import {
 } from "../../service/course";
 import { getAllTeacher } from "../../service/teacher"; // 你需要有这个接口
 import FormModal from "../../component/FormModal";
+import { getAllTerm } from "../../service/term";
+
 
 const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
@@ -82,6 +84,17 @@ const Course = () => {
     return data.map(item => ({ ...item, key: item.id }));
   }, [data]);
 
+  // 加载学期列表（用于选课弹窗下拉）
+  const loadTerms = async () => {
+    try {
+      const res = await getAllTerm(); // 你已有的接口
+      setTermList(res || []);
+    } catch {
+      setTermList([]);
+      messageApi.error("加载学期列表失败");
+    }
+  };
+
   // 加载教师列表
   const loadTeachers = async () => {
     try {
@@ -114,6 +127,7 @@ const Course = () => {
   useEffect(() => {
     refresh();
     loadTeachers();
+    loadTerms();
   }, []);
 
   const handleSelectChange = (keys, rows) => {
@@ -195,7 +209,7 @@ const Course = () => {
     setConfirmLoading(true);
     try {
       await electCourse({
-        userId: currentUser.id, // 假设你有登录态
+        userId: currentUser.id,
         courseId: selectedRowRef.current.id,
         termId: values.termId,
       });
@@ -299,19 +313,32 @@ const Course = () => {
         </Form>
       </FormModal>
 
-      {/* 学生选课 */}
-      <FormModal title="学生选课" open={electOpen} onCancel={() => setElectOpen(false)} onSubmit={handleElectOk} loading={confirmLoading}>
+      <FormModal
+        title="学生选课"
+        open={electOpen}
+        onCancel={() => setElectOpen(false)}
+        onSubmit={handleElectOk}
+        loading={confirmLoading}
+      >
         <Form form={electForm} layout="vertical">
-          <div>当前课程：{selectedRowRef.current?.name}</div>
-          <Form.Item name="termId" label="选择学期" rules={[{ required: true }]}>
+          <div style={{ marginBottom: 16, fontWeight: "bold" }}>
+            当前课程：{selectedRowRef.current?.name || "-"}
+          </div>
+          <Form.Item name="termId" label="选择学期" rules={[{ required: true, message: "请选择学期" }]}>
             <Select placeholder="请选择学期">
-              {termList.map(t => (
-                <Select.Option key={t.id} value={t.id}>{t.name}</Select.Option>
+              {termList.map(term => (
+                <Select.Option key={term.id} value={term.id}>
+                  {term.name}
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
         </Form>
       </FormModal>
+
+
+
+
     </>
   );
 };

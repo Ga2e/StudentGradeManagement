@@ -25,7 +25,7 @@ public class AuthenticateController {
   }
 
   @PostMapping("/logout")
-  public ApiResult<?> logout(@RequestBody HttpServletRequest request) {
+  public ApiResult<?> logout(HttpServletRequest request) {
     return authenticateService.logout(request);
   }
 }

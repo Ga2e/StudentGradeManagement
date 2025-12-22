@@ -8,11 +8,12 @@ import org.ga2e.project.module.Grade.dto.GradeUpdateDTO;
 import org.ga2e.project.module.Grade.entity.Grade;
 import org.ga2e.project.module.Grade.mapper.decorator.GradeDecorator;
 import org.ga2e.project.module.Grade.resp.GradeResp;
+import org.ga2e.project.module.Student.mapper.decorator.StudentMapperDecorator;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 
-@Mapper(componentModel = "spring", uses = { GradeDecorator.class, CourseMapper.class })
+@Mapper(componentModel = "spring", uses = { StudentMapperDecorator.class, GradeDecorator.class, CourseMapper.class })
 public interface GradeMapper {
 
   @Mapping(target = "id", ignore = true)
@@ -31,6 +32,7 @@ public interface GradeMapper {
   public Grade UpdateToEntity(GradeUpdateDTO gradeUpdateDTO);
 
   @Mapping(target = "course", source = "course")
+  @Mapping(target = "student", source = "student")
   public GradeResp entityToResp(Grade grade);
 
   public List<GradeResp> entitysToResps(List<Grade> grades);

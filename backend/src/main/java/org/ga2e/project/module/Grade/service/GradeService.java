@@ -8,6 +8,7 @@ import org.ga2e.project.module.Grade.resp.GradeResp;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,5 +35,5 @@ public interface GradeService {
 
   List<GradeResp> findElectiveGradesByCourseId(Long id);
 
-  List<GradeResp> findMeGrade(Authentication authentication);
+  List<GradeResp> findMeGrade();
 }

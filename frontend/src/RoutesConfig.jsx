@@ -7,9 +7,11 @@ import StudentProfile from "./pages/student/StudentProfile";
 import Institute from "./pages/admin/Institute";
 import Professional from "./pages/admin/Professional";
 import Class from "./pages/admin/Class";
-import CoursePage from "./pages/admin/Course";
 import Teacher from "./pages/admin/Teacher";
 import Course from "./pages/admin/Course";
+import Student from "./pages/admin/Student";
+import Grade from "./pages/admin/Grade";
+import MyGrade from "./pages/student/MyGrade";
 
 
 const RoutesConfig = () => {
@@ -25,6 +27,8 @@ const RoutesConfig = () => {
             <Outlet></Outlet>
           </MainPage>
         </RoleCheck>}>
+
+
 
         <Route path="studentProfile" element={
           <RoleCheck required={STUDENT}>
@@ -74,6 +78,32 @@ const RoutesConfig = () => {
           </RoleCheck>
         }>
         </Route>
+        <Route path="student" element={
+          <RoleCheck required={ADMIN}>
+
+            <Student></Student>
+
+          </RoleCheck>
+        }>
+        </Route>
+        <Route path="grade" element={
+          <RoleCheck required={ADMIN}>
+
+            <Grade></Grade>
+
+          </RoleCheck>
+        }>
+        </Route>
+
+        <Route path="student/grade" element={
+          <RoleCheck required={STUDENT}>
+
+            <MyGrade></MyGrade>
+
+          </RoleCheck>
+        }>
+        </Route>
+
 
 
 

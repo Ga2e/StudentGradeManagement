@@ -52,7 +52,7 @@ public class Grade {
 
   // 更新时间
   @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updatedAt = LocalDateTime.now();
+  private LocalDateTime updatedAt;
 
   // 自动更新 updated_at
   @PreUpdate

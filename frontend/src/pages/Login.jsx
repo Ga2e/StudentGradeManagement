@@ -1,132 +1,182 @@
-import { Button, Divider, Flex, Form, Image, Input, Space, theme, Typography } from "antd"
-import Title from "antd/es/typography/Title"
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
+import {
+  Button,
+  Flex,
+  Form,
+  Input,
+  message,
+  Space,
+  Tabs,
+  theme,
+  Typography,
+} from "antd";
+import Title from "antd/es/typography/Title";
 import { login } from "../service/auth";
 import { useNavigate } from "react-router";
 import { usePermissionContext } from "../context/Permission";
-import { ADMIN, STUDENT } from "../constant/Role";
 import { useMessage } from "../context/MessageProvider";
-import { getCaptcha, verifyCaptcha } from "../service/captcha";
+import { verifyCaptcha } from "../service/captcha";
 import Captcha from "../component/Captcha";
 
+const { TabPane } = Tabs;
+
+const roles = {
+  STUDENT: "student",
+  TEACHER: "teacher",
+  ADMIN: "admin",
+};
+
 const Login = () => {
-  const { messageApi } = useMessage()
-  const { _, setRole } = usePermissionContext()
-  const nav = useNavigate()
+  const { messageApi } = useMessage();
+  const { _, setRole } = usePermissionContext();
+  const nav = useNavigate();
   const [form] = Form.useForm();
-  const { token } = theme.useToken()
+  const { token } = theme.useToken();
 
-  const [r, setR] = useState(ADMIN)
-  const [loading, setLoading] = useState(false)
-  const [captchaKey, setCaptchaKey] = useState("")
-  const onCaptchaReady = (captchaKey) => {
-    setCaptchaKey(captchaKey)
-  }
-  const [captchaCode, setCaptchaCode] = useState("")
+  const [loading, setLoading] = useState(false);
+  const [captchaKey, setCaptchaKey] = useState("");
+  const [captchaCode, setCaptchaCode] = useState("");
+  const [activeRole, setActiveRole] = useState(roles.STUDENT); // 默认选中学生
 
+  const onCaptchaReady = (key) => {
+    setCaptchaKey(key);
+  };
 
-  const onFinish = async (value) => {
-    setLoading(true)
-    if (captchaCode === "") {
-      messageApi.error("please input capthca")
-      setLoading(false)
+  const onFinish = async (values) => {
+    setLoading(true);
 
-      return
-    }
-    const resp = await verifyCaptcha({ captchaCode: captchaCode, captchaKey: captchaKey })
-
-    if (resp.code != 200) {
-      messageApi.error("captcha verify faild")
-      setLoading(false)
-      return
-
+    if (!captchaCode) {
+      messageApi.error("请输入验证码");
+      setLoading(false);
+      return;
     }
 
-    await login(value)
-      .then(resp => {
-        if (resp.data.code === 200) {
-          localStorage.setItem('token', resp.data.data.token)
-          localStorage.setItem('role', resp.data.data.user.role.name)
-          setRole(value.role)
-          messageApi.info('login success')
-          nav("/")
+    try {
+      const verifyResp = await verifyCaptcha({
+        captchaCode,
+        captchaKey,
+      });
 
-        } else {
+      if (verifyResp.code !== 200) {
+        messageApi.error("验证码错误");
+        setLoading(false);
+        return;
+      }
 
-          messageApi.error(resp.data.message)
-          setLoading(false)
-        }
-      })
-    setLoading(false)
+      // 添加 role 字段
+      const loginData = {
+        ...values,
+        role: activeRole,
+      };
 
-  }
+      const resp = await login(loginData);
+
+      if (resp.data.code === 200) {
+        const { token, user } = resp.data.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", user.role.name);
+        setRole(activeRole);
+        messageApi.success("登录成功");
+        nav("/");
+      } else {
+        messageApi.error(resp.data.message || "登录失败");
+      }
+    } catch (err) {
+      messageApi.error("登录异常");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (key) => {
+    setActiveRole(key);
+    form.resetFields(["username", "password"]); // 可选：切换角色清空输入
+  };
+
   return (
     <Flex
       style={{
-        width: '100%',
-        height: '100%',
-        justifyContent: 'center',
-        alignItems: 'center',
+        width: "100%",
+        height: "100%",
+        justifyContent: "center",
+        alignItems: "center",
         minHeight: 400,
-        background: token.Layout.bodyBg
+        background: token.Layout?.bodyBg || "#f0f2f5",
       }}
     >
-
-
-      <Flex align="center" vertical style={{
-        border: token.colorBorder,
-        flexBasis: 425,
-        height: 600,
-        background: token.colorContentBg,
-        borderRadius: 20,
-      }}>
-
-        <Title level={2} style={{
-          textAlign: 'center',
-          margin: "50px 0px"
-        }}>
+      <Flex
+        vertical
+        align="center"
+        style={{
+          width: 425,
+          padding: "40px 30px",
+          background: token.colorBgContainer,
+          borderRadius: 20,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Title level={2} style={{ margin: "0 0 40px 0" }}>
           Easy Study
         </Title>
-        <Form form={form} layout="vertical" onFinish={onFinish}>
 
-          <Form.Item name='username'>
+        <Tabs
+          activeKey={activeRole}
+          onChange={handleTabChange}
+          centered
+          style={{ width: "100%", marginBottom: 24 }}
+        >
+          <TabPane tab="学生登录" key={roles.STUDENT} />
+          <TabPane tab="教师登录" key={roles.TEACHER} />
+          <TabPane tab="管理员登录" key={roles.ADMIN} />
+        </Tabs>
 
-            <Input placeholder="username"></Input>
+        <Form form={form} layout="vertical" onFinish={onFinish} style={{ width: "100%" }}>
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: "请输入用户名/学号/工号" }]}
+          >
+            <Input placeholder="用户名 / 学号 / 工号" size="large" />
           </Form.Item>
-          <Form.Item name='password'>
-            <Input placeholder="password"   ></Input>
-          </Form.Item>
-          <Form.Item name='role' hidden initialValue={r}>
 
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: "请输入密码" }]}
+          >
+            <Input.Password placeholder="密码" size="large" />
           </Form.Item>
+
           <Form.Item>
-
-            <Space.Compact style={{ width: '100%' }}>
+            <Space.Compact style={{ width: "100%" }}>
               <Input
-                style={{ width: 'calc(100% - 90px)' }}
-                placeholder="captcha"
-                onInput={(e) => setCaptchaCode(e.target.value)}
-              >
+                placeholder="验证码"
+                size="large"
+                value={captchaCode}
+                onChange={(e) => setCaptchaCode(e.target.value)}
+                style={{ width: "calc(100% - 110px)" }}
+              />
+              <Captcha onCaptchaReady={onCaptchaReady} />
+            </Space.Compact>
+          </Form.Item>
 
-              </Input>
-              <Captcha onCaptchaReady={onCaptchaReady}>
-              </Captcha>
-            </Space.Compact >
+          <Form.Item style={{ marginTop: 40, marginBottom: 0 }}>
+            <Button
+              type="primary"
+              size="large"
+              block
+              htmlType="submit"
+              loading={loading}
+            >
+              登录
+            </Button>
           </Form.Item>
-          <Form.Item style={{
-            marginTop: 40
-          }}>
-            <Space size={90}>
-              <Button type="primary" loading={loading} htmlType="submit">Submit</Button>
-              <Button type="link">forget?</Button>
-            </Space>
-          </Form.Item>
-        </Form >
+
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Button type="link">忘记密码？</Button>
+          </div>
+        </Form>
       </Flex>
-    </Flex >
+    </Flex>
+  );
+};
 
-  )
-
-}
-
-export default Login
+export default Login;

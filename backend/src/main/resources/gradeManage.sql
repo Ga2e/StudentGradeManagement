@@ -299,9 +299,18 @@ INSERT INTO role (
   name
 ) VALUES ("admin"),( "teacher"),("student");
 
+-- 正确写法1：显式指定列（推荐，安全）
+INSERT INTO user (role_id, code, email, phone, password) 
+VALUES 
+  (1, 'admin', 'admin@school.com', '2739606014', '$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK'),
+  (2, 'teacher01', 'teacher@school.com', '13800138001', '$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK'),
+  (3, 'student01', 'student@school.com', '13900139001', '$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK');
 
-INSERT INTO user(role_id,code,email,phone,password) VALUES (1,'admin','admin','2739606014@qq.com','$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK');
-INSERT INTO user(role_id,code,email,phone,password) VALUES (2,'teacher','teacher','ldq2739606014@gmail.com','$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK');
-INSERT INTO user(role_id,code,email,phone,password) VALUES (3,'student','student','ldq2739606014@gmail.com','$2a$10$2bmxpPfOFIWp8eLPhlpSTOiV83XcaDXCRZ62hcnUwG43Ocm57sMXK');
-
+INSERT INTO term (name, start_date, end_date) VALUES
+('2023-2024 学年第一学期', '2023-09-01', '2024-01-31'),
+('2023-2024 学年第二学期', '2024-03-01', '2024-07-31'),
+('2024-2025 学年第一学期', '2024-09-01', '2025-01-31'),
+('2024-2025 学年第二学期', '2025-03-01', '2025-07-31'),
+('2025-2026 学年第一学期', '2025-09-01', '2026-01-31'),
+('2025-2026 学年第二学期', '2026-03-01', '2026-07-31');
 
