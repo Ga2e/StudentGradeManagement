@@ -24,7 +24,6 @@ const RoutesConfig = () => {
         <RoleCheck required={ANY}>
 
           <MainPage>
-            <Outlet></Outlet>
           </MainPage>
         </RoleCheck>}>
 
