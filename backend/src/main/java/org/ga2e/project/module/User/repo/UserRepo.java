@@ -14,16 +14,22 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
   public Optional<User> findByEmail(String email);
 
-  public Optional<User> findByIdAndRoleId(Long id, Long roleId);
+  public Optional<User> findByIdAndRole_Id(Long id, Long roleId);
 
   public Optional<User> findByPhone(String phone);
 
   public Optional<User> findByCode(String code);
 
-  public void deleteByIdAndRoleId(Long id, Long roleId);
+  public void deleteByIdAndRole_Id(Long id, Long roleId);
 
-  public List<User> findByRoleId(Long roleId);
+  public List<User> findByRole_Id(Long roleId);
 
-  public Page<User> findByRoleId(Pageable pageable, Long roleId);
+  public Page<User> findByRole_Id(Pageable pageable, Long roleId);
+
+  public Page<User> findByRole_IdAndCodeContaining(Pageable pageable, Long roleId, String code);
+
+  public Page<User> findByRole_IdAndStudentProfileNameContaining(Pageable pageable, Long roleId, String name);
+
+  public Page<User> findByRole_IdAndTeacherProfileNameContaining(Pageable pageable, Long roleId, String name);
 
 }

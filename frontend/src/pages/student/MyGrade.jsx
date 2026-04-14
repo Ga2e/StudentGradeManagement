@@ -35,6 +35,22 @@ const columns = [
         {type === "MAJOR" ? "主修" : "选修"}
       </Tag>
     ),
+    filters: [
+      {
+        text: '选修',
+        value: 'ELECTIVE'
+      },
+      {
+
+        text: '主修',
+        value: 'MAJOR'
+      }
+    ]
+    ,
+    onFilter: (value, record) => {
+      console.log(record.type)
+      return record.type === value
+    },
   },
   {
     title: "录入时间",
@@ -57,7 +73,6 @@ const MyGrade = () => {
       try {
         const res = await getMyGrades();
         const grades = res || [];
-
         // 假设后端返回的 GradeResp 有字段 type: "MAJOR" 或 "ELECTIVE"
         // 如果没有这个字段，你需要根据课程是否属于专业必修来判断（可后续扩展）
         const major = grades.filter(g => g.type === "MAJOR");
@@ -85,36 +100,12 @@ const MyGrade = () => {
         我的成绩
       </Typography.Title>
 
-      <Spin spinning={loading}>
-        <Tabs defaultActiveKey="all" size="large">
-          <TabPane tab={`全部 (${allGrades.length})`} key="all">
-            <Table
-              columns={columns}
-              dataSource={getTableData(allGrades)}
-              pagination={{ pageSize: 10 }}
-              locale={{ emptyText: <Empty description="暂无成绩记录" /> }}
-            />
-          </TabPane>
-
-          <TabPane tab={`主修 (${majorGrades.length})`} key="major">
-            <Table
-              columns={columns.filter(c => c.dataIndex !== "type")} // 主修页可隐藏类型列
-              dataSource={getTableData(majorGrades)}
-              pagination={{ pageSize: 10 }}
-              locale={{ emptyText: <Empty description="暂无主修成绩" /> }}
-            />
-          </TabPane>
-
-          <TabPane tab={`选修 (${electiveGrades.length})`} key="elective">
-            <Table
-              columns={columns.filter(c => c.dataIndex !== "type")}
-              dataSource={getTableData(electiveGrades)}
-              pagination={{ pageSize: 10 }}
-              locale={{ emptyText: <Empty description="暂无选修成绩" /> }}
-            />
-          </TabPane>
-        </Tabs>
-      </Spin>
+      <Table
+        columns={columns}
+        dataSource={getTableData(allGrades)}
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: <Empty description="暂无成绩记录" /> }}
+      />
     </div>
   );
 };

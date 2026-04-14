@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.ga2e.project.common.constant.CourseType;
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.module.Course.dto.CourseAddDTO;
 import org.ga2e.project.module.Course.dto.CourseUpdateDTO;
-import org.ga2e.project.module.Course.dto.ElectCourseDTO;
 import org.ga2e.project.module.Course.resp.CourseResp;
 import org.ga2e.project.module.Course.service.CourseService;
 import org.springframework.data.domain.Page;
@@ -91,11 +91,6 @@ public class CourseController {
 
   }
 
-  @PostMapping("/elect")
-  public ApiResult<?> electCourse(@RequestBody ElectCourseDTO electCourseDTO) {
-    courseService.electCourse(electCourseDTO);
-    return ApiResult.success();
 
-  }
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.ga2e.project.module.Class.entity.Class;
 import org.ga2e.project.module.Institute.entity.Institute;
 import org.ga2e.project.module.Professional.entity.Professional;
+import org.ga2e.project.module.Professional.entity.ProfessionalCourse;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +40,9 @@ public class Professional {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "institute_id")
   private Institute institute;
+
+  @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
+  private List<ProfessionalCourse> courses;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

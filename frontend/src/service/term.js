@@ -2,7 +2,7 @@ import instance from "./axios";
 
 export const getAllTerm = async () => {
   const res = await instance.get("/term");
-  return res.data.data; // List<TermResp>
+  return res.data; // List<TermResp>
 };
 
 export const getTermById = async (id) => {

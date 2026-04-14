@@ -12,7 +12,7 @@ export const getProfessionalPage = async ({ pageNum = 1, pageSize = 10 }) => {
       sort: "id,asc",
     },
   });
-  return res.data.data; // { content: [...], totalElements: 88 }
+  return res.data; // { code: 200, message: "OK", data: { content: [...], totalElements: 88 } }
 };
 
 /**
@@ -20,7 +20,7 @@ export const getProfessionalPage = async ({ pageNum = 1, pageSize = 10 }) => {
  */
 export const addProfessional = async (data) => {
   const res = await instance.post("/professional", data);
-  return res.data.data;
+  return res.data;
 };
 
 /**
@@ -28,7 +28,7 @@ export const addProfessional = async (data) => {
  */
 export const updateProfessional = async (data) => {
   const res = await instance.put("/professional/", data);
-  return res.data.data;
+  return res.data;
 };
 
 /**
@@ -36,5 +36,37 @@ export const updateProfessional = async (data) => {
  */
 export const deleteProfessional = async (id) => {
   const res = await instance.delete(`/professional/${id}`);
-  return res.data.data;
+  return res.data;
+};
+
+/**
+ * 添加培养方案
+ */
+export const addProfessionalPlan = async (data) => {
+  const res = await instance.post("/professional/plan", data);
+  return res.data;
+};
+
+/**
+ * 获取专业的培养方案
+ */
+export const getProfessionalPlan = async (professionalId) => {
+  const res = await instance.get(`/professional/plan/${professionalId}`);
+  return res.data;
+};
+
+/**
+ * 获取所有培养方案
+ */
+export const getAllProfessionalPlans = async () => {
+  const res = await instance.get("/professional/plan");
+  return res.data;
+};
+
+/**
+ * 删除培养方案
+ */
+export const deleteProfessionalPlan = async (professionalId) => {
+  const res = await instance.delete(`/professional/plan/${professionalId}`);
+  return res.data;
 };

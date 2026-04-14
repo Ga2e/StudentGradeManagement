@@ -28,7 +28,7 @@ import moment from "moment";
 const { Option } = Select;
 
 const columns = [
-  { title: "ID", dataIndex: "id", width: 80 },
+  { title: "ID", dataIndex: "id", width: 80, render: (_, record, index) => index + 1 },
   { title: "学号", dataIndex: "code" },
   { title: "姓名", dataIndex: ["studentProfile", "name"] },
   {
@@ -61,6 +61,10 @@ const Student = () => {
   const [total, setTotal] = useState(0);
   const [data, setData] = useState([]);
 
+  // 搜索相关状态
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState('code'); // code: 学号, name: 姓名
+
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
@@ -73,12 +77,17 @@ const Student = () => {
   }, [data]);
 
   // 刷新列表
-  const refresh = async (page = pageNum) => {
+  const refresh = async (page = pageNum, keyword = searchKeyword, type = searchType) => {
     setLoading(true);
     try {
-      const res = await getStudentPage({ pageNum: page, pageSize });
-      setData(res.content || []);
-      setTotal(res.totalElements || 0);
+      const res = await getStudentPage({ 
+        pageNum: page, 
+        pageSize,
+        keyword: keyword,
+        type: type
+      });
+      setData(res.data.content || []);
+      setTotal(res.data.totalElements || 0);
       setPageNum(page);
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
@@ -87,6 +96,18 @@ const Student = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // 搜索处理
+  const handleSearch = () => {
+    refresh(1); // 搜索时从第一页开始
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    setSearchKeyword('');
+    setSearchType('code');
+    refresh(1, '', 'code'); // 重置时从第一页开始，使用空的搜索参数
   };
 
   useEffect(() => {
@@ -194,7 +215,7 @@ const Student = () => {
       <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         {/* 顶部操作栏 */}
         <div style={{ padding: "16px 24px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <Typography.Title level={4} style={{ margin: 0 }}>学生管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增学生</Button>
@@ -202,6 +223,25 @@ const Student = () => {
               <Button onClick={handleUpdate} disabled={!hasSelected}>修改基本信息</Button>
               <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
             </Space>
+          </div>
+          {/* 搜索框 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Select 
+              value={searchType} 
+              onChange={setSearchType} 
+              style={{ width: 120 }}
+            >
+              <Option value="code">学号</Option>
+              <Option value="name">姓名</Option>
+            </Select>
+            <Input 
+              placeholder="请输入搜索关键词" 
+              value={searchKeyword} 
+              onChange={(e) => setSearchKeyword(e.target.value)} 
+              style={{ width: 300 }}
+            />
+            <Button type="primary" onClick={handleSearch}>查找</Button>
+            <Button onClick={handleReset}>重置</Button>
           </div>
         </div>
 

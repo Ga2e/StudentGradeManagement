@@ -3,7 +3,7 @@ package org.ga2e.project.module.Grade.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import org.ga2e.project.module.Course.entiry.Course;
+import org.ga2e.project.module.Course.entity.Course;
 import org.ga2e.project.module.User.entity.User;
 
 import jakarta.persistence.Column;

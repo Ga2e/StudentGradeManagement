@@ -11,6 +11,7 @@ import {
   Select,
   Space,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import {
@@ -18,12 +19,9 @@ import {
   addClass,
   updateClass,
   deleteClass,
-  addCoursesToClass,
 } from "../../service/class";
 import { getProfessionalPage } from "../../service/professional"; // 复用专业接口
-import { getAllCourse } from "../../service/course"; // 你要有这个接口获取所有课程
 import FormModal from "../../component/FormModal";
-import { getAllTerm } from "../../service/term";
 
 
 const { Option } = Select;
@@ -31,19 +29,13 @@ const { Option } = Select;
 const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
   { title: "班级名称", dataIndex: "name" },
-  { title: "入学年份", dataIndex: "year" },
+  { title: "开设年份", dataIndex: "year" },
   {
     title: "所属专业",
     dataIndex: ["professional", "name"],
     render: (text) => text || "-",
   },
-  {
-    title: "已关联课程",
-    dataIndex: "courseIds",
-    render: (ids) => (
-      <span>{ids?.length || 0} 门</span>
-    ),
-  },
+
   {
     title: "创建时间",
     dataIndex: "createdAt",
@@ -57,7 +49,6 @@ const Class = () => {
 
   const [addForm] = Form.useForm();
   const [updateForm] = Form.useForm();
-  const [courseForm] = Form.useForm(); // 专门给“添加课程”弹窗用
 
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -70,12 +61,9 @@ const Class = () => {
 
   // 下拉数据
   const [professionalList, setProfessionalList] = useState([]);
-  const [courseList, setCourseList] = useState([]);
-  const [termList, setTermList] = useState([]);
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [courseOpen, setCourseOpen] = useState(false);
 
   const hasSelected = selectedRowKeys.length > 0;
 
@@ -87,44 +75,36 @@ const Class = () => {
   const loadProfessionals = async () => {
     try {
       const res = await getProfessionalPage({ pageNum: 1, pageSize: 999 });
-      setProfessionalList(res.content || []);
-    } catch {
-      setProfessionalList([]);
+      const professionals = res.data?.content || [];
+      console.log('专业列表:', professionals);
+      setProfessionalList(professionals);
+      // 设置表单默认值
+      if (professionals.length > 0) {
+        addForm.setFieldsValue({ professionalId: professionals[0].id });
+        updateForm.setFieldsValue({ professionalId: professionals[0].id });
+      }
+    } catch (error) {
+      console.log('加载专业列表失败:', error);
+      // 不显示错误信息
     }
   };
 
-  // 加载所有课程（用于多选）
-  const loadCourses = async () => {
-    try {
-      const res = await getAllCourse();
-      console.log(res)
-      setCourseList(res || []);
-    } catch {
-      setCourseList([]);
-    }
-  };
-  const loadTerms = async () => {
-    try {
-      const res = await getAllTerm(); // 你已有的 /term 接口
-      setTermList(res || []);
-    } catch (err) {
-      setTermList([]);
-      messageApi.error("加载学期列表失败");
-    }
-  };
+
 
   // 刷新班级列表
   const refresh = async (page = pageNum) => {
     setLoading(true);
     try {
       const res = await getClassPage({ pageNum: page, pageSize });
-      setData(res.content || []);
-      setTotal(res.totalElements || 0);
+      console.log('班级列表数据:', res);
+      setData(res.data?.content || []);
+      setTotal(res.data?.totalElements || 0);
       setPageNum(page);
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
-    } catch {
-      messageApi.error("加载失败");
+    } catch (error) {
+      console.log('加载班级列表失败:', error);
+      // 不显示错误信息
     } finally {
       setLoading(false);
     }
@@ -133,9 +113,15 @@ const Class = () => {
   useEffect(() => {
     refresh();
     loadProfessionals();
-    loadCourses();
-    loadTerms()
   }, []);
+
+  // 当专业列表加载完成后，设置表单默认值
+  useEffect(() => {
+    if (professionalList.length > 0) {
+      addForm.setFieldsValue({ type: 'ADMIN_CLSS', professionalId: professionalList[0].id });
+      updateForm.setFieldsValue({ type: 'ADMIN_CLSS', professionalId: professionalList[0].id });
+    }
+  }, [professionalList]);
 
   const handleSelectChange = (keys, rows) => {
     setSelectedRowKeys(keys);
@@ -143,17 +129,16 @@ const Class = () => {
   };
 
   // 新增
-  const handleAddOk = async () => {
-    const values = await addForm.validateFields();
+  const handleAddOk = async (values) => {
     setConfirmLoading(true);
     try {
       await addClass(values);
-      messageApi.success("新增成功");
+      message.success("新增成功");
       setAddOpen(false);
       addForm.resetFields();
       refresh();
     } catch {
-      messageApi.error("新增失败");
+      message.error("新增失败");
     } finally {
       setConfirmLoading(false);
     }
@@ -162,27 +147,27 @@ const Class = () => {
   // 修改
   const handleUpdate = () => {
     const row = selectedRowRef.current;
-    if (!row) return messageApi.warning("请先选择一个班级");
+    if (!row) return message.warning("请先选择一个班级");
 
     updateForm.setFieldsValue({
       id: row.id,
       name: row.name,
       year: row.year,
+      type: row.type,
       professionalId: row.professional?.id,
     });
     setUpdateOpen(true);
   };
 
-  const handleUpdateOk = async () => {
-    const values = await updateForm.validateFields();
+  const handleUpdateOk = async (values) => {
     setConfirmLoading(true);
     try {
       await updateClass(values);
-      messageApi.success("修改成功");
+      message.success("修改成功");
       setUpdateOpen(false);
       refresh();
     } catch {
-      messageApi.error("修改失败");
+      message.error("修改失败");
     } finally {
       setConfirmLoading(false);
     }
@@ -191,42 +176,21 @@ const Class = () => {
   // 删除
   const handleDelete = async () => {
     const id = selectedRowKeys[0];
-    try {
-      await deleteClass(id);
-      messageApi.success("删除成功");
-      refresh();
-    } catch {
-      messageApi.error("删除失败");
+
+    const res = await deleteClass(id);
+    if (res.code === 200) {
+      message.success("删除成功");
+
+    } else {
+      message.error(res.message);
+
     }
+    refresh();
+
+
   };
 
-  // 添加课程
-  const handleAddCourse = () => {
-    if (!selectedRowRef.current) {
-      return messageApi.warning("请先选择一个班级");
-    }
-    courseForm.resetFields();
-    setCourseOpen(true);
-  };
 
-  const handleAddCourseOk = async () => {
-    const values = await courseForm.validateFields();
-    setConfirmLoading(true);
-    try {
-      await addCoursesToClass({
-        classId: selectedRowRef.current.id,
-        courseId: values.courseIds,
-        termId: values.termId,
-      });
-      messageApi.success("课程添加成功");
-      setCourseOpen(false);
-      refresh();
-    } catch {
-      messageApi.error("添加失败");
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
 
   return (
     <>
@@ -239,7 +203,6 @@ const Class = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>班级管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增班级</Button>
-              <Button onClick={handleAddCourse} disabled={!hasSelected}>添加课程</Button>
               <Button onClick={handleUpdate} disabled={!hasSelected}>修改</Button>
               <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
             </Space>
@@ -275,14 +238,19 @@ const Class = () => {
       </Flex>
 
       {/* 新增班级 */}
-      <FormModal title="新增班级" open={addOpen} onCancel={() => setAddOpen(false)} onSubmit={handleAddOk} loading={confirmLoading}>
-        <Form form={addForm} layout="vertical">
+      <FormModal title="新增班级" open={addOpen} onCancel={() => setAddOpen(false)} onSubmit={handleAddOk} loading={confirmLoading} form={addForm}>
           <Form.Item name="name" label="班级名称" rules={[{ required: true }]}>
             <Input placeholder="如：2023级软件1班" />
           </Form.Item>
           <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
             <InputNumber style={{ width: "100%" }} placeholder="如：2023" />
           </Form.Item>
+          <Form.Item name="type" label="班级类型" rules={[{ required: true }]}>
+            <Select placeholder="请选择班级类型">
+              <Option value="ADMIN_CLSS">行政班</Option>
+              <Option value="TEACHER_CLASS">教学班</Option>
+            </Select>
+          </Form.Item>
           <Form.Item name="professionalId" label="所属专业" rules={[{ required: true }]}>
             <Select placeholder="请选择专业">
               {professionalList.map(p => (
@@ -290,18 +258,22 @@ const Class = () => {
               ))}
             </Select>
           </Form.Item>
-        </Form>
       </FormModal>
 
       {/* 修改班级 */}
-      <FormModal title="修改班级" open={updateOpen} onCancel={() => setUpdateOpen(false)} onSubmit={handleUpdateOk} loading={confirmLoading}>
-        <Form form={updateForm} layout="vertical">
+      <FormModal title="修改班级" open={updateOpen} onCancel={() => setUpdateOpen(false)} onSubmit={handleUpdateOk} loading={confirmLoading} form={updateForm}>
           <Form.Item name="name" label="班级名称" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
           <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
+          <Form.Item name="type" label="班级类型" rules={[{ required: true }]}>
+            <Select placeholder="请选择班级类型">
+              <Option value="ADMIN_CLSS">行政班</Option>
+              <Option value="TEACHER_CLASS">教学班</Option>
+            </Select>
+          </Form.Item>
           <Form.Item name="professionalId" label="所属专业" rules={[{ required: true }]}>
             <Select placeholder="请选择专业">
               {professionalList.map(p => (
@@ -309,62 +281,12 @@ const Class = () => {
               ))}
             </Select>
           </Form.Item>
-        </Form>
       </FormModal>
 
 
 
 
-      {/* 给班级添加课程 */}
-      <FormModal
-        title="为班级添加课程"
-        open={courseOpen}
-        onCancel={() => setCourseOpen(false)}
-        onSubmit={handleAddCourseOk}
-        loading={confirmLoading}
-      >
-        <Form form={courseForm} layout="vertical">
-          <div style={{ marginBottom: 16, fontWeight: "bold", color: "#1890ff" }}>
-            当前班级：{selectedRowRef.current?.name || "-"}
-          </div>
 
-          <Form.Item
-            name="courseIds"
-            label="选择课程"
-            rules={[{ required: true, message: "请选择至少一门课程" }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择课程（可多选）"
-              loading={courseList.length === 0}
-            >
-              {courseList.map(c => {
-                return (
-                  <Option key={c.id} value={c.id}>
-                    {c.name} ({c.code})
-                  </Option>)
-              })}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="termId"
-            label="所属学期"
-            rules={[{ required: true, message: "请选择学期" }]}
-          >
-            <Select
-              placeholder="请选择学期"
-              loading={termList.length === 0}
-            >
-              {termList.map(term => (
-                <Option key={term.id} value={term.id}>
-                  {term.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </FormModal>
 
 
 

@@ -12,9 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -94,21 +91,6 @@ public class GradeController {
     try {
       gradeService.add(gradeAddDTO);
       return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
-
-  }
-
-  @GetMapping("/admin/search")
-  public ApiResult<?> findStudentGrade(@PathVariable Long id) {
-
-    try {
-      StudentGradeResp studentGradeResp = StudentGradeResp.builder()
-          .electives(gradeService.findElectiveGradesByStudentId(id))
-          .majors(gradeService.findMajorGradesByStudentId(id))
-          .build();
-      return ApiResult.success(studentGradeResp);
     } catch (Exception e) {
       return ApiResult.error(e.getMessage());
     }

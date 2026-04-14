@@ -2,16 +2,23 @@ package org.ga2e.project.module.Class.service.imp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
-import org.ga2e.project.module.Class.dto.AddCoursesDTO;
 import org.ga2e.project.module.Class.dto.ClassAddDTO;
 import org.ga2e.project.module.Class.dto.ClassUpdateDTO;
+import org.ga2e.project.module.Class.dto.ComposeCoursesDTO;
 import org.ga2e.project.module.Class.entity.Class;
+import org.ga2e.project.module.Class.entity.ClassCourse;
 import org.ga2e.project.module.Class.mapper.ClassMapper;
+import org.ga2e.project.module.Class.pojo.ClassCourseId;
+import org.ga2e.project.module.Class.repo.ClassCourseRepo;
 import org.ga2e.project.module.Class.repo.ClassRepo;
 import org.ga2e.project.module.Class.resp.ClassResp;
 import org.ga2e.project.module.Class.service.ClassService;
-import org.ga2e.project.module.Course.dto.BindDTO;
+import org.ga2e.project.module.Course.mapper.CourseMapper;
+import org.ga2e.project.module.Course.repo.CourseRepo;
+import org.ga2e.project.module.Course.resp.CourseResp;
 import org.ga2e.project.module.Course.service.CourseService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +36,9 @@ public class ClassServiceImp implements ClassService {
   private final ClassRepo classRepo;
   private final ClassMapper classMapper;
   private final CourseService courseService;
+  private final ClassCourseRepo classCourseRepo;
+  private final CourseMapper courseMapper;
+  private final CourseRepo courseRepo;
 
   @Override
   public List<ClassResp> findAll() {
@@ -89,11 +99,38 @@ public class ClassServiceImp implements ClassService {
 
   @Override
   @Transactional
-  public void classAddCourses(AddCoursesDTO addCoursesDTO) {
-    Long classId = addCoursesDTO.getClassId();
-    Long termId = addCoursesDTO.getTermId();
-    addCoursesDTO.getCourseId().stream()
-        .forEach(courseId -> courseService.bindClassToMajor(new BindDTO(classId, courseId, termId)));
+  public void composeCourses(ComposeCoursesDTO addCoursesDTO) {
+    for (Long courseId : addCoursesDTO.getCourseId()) {
+      ClassCourse cc = new ClassCourse();
+      ClassCourseId id = new ClassCourseId();
+      id.setClassId(addCoursesDTO.getClassId());
+      id.setCourseId(courseId);
+      id.setName(addCoursesDTO.getName());
+      cc.setId(id);
+      cc.setClazz(classRepo.findById(addCoursesDTO.getClassId()).orElseThrow());
+      cc.setCourse(courseRepo.findById(courseId).orElseThrow());
+      classCourseRepo.save(cc);
+    }
+    return;
+  }
+
+  @Override
+  public void deleteCourse(ClassCourseId id) {
+    classCourseRepo.deleteById(id);
+  }
+
+  @Override
+  public List<CourseResp> getCourseByClassId(Long id) {
+    return courseMapper.entitysToResps(
+        classCourseRepo.findById_ClassId(id).stream()
+            .map(ClassCourse::getCourse)
+            .collect(java.util.stream.Collectors.toList()));
+
+  }
+
+  @Override
+  public List ComposeTeacher() {
+    return null;
   }
 
 }

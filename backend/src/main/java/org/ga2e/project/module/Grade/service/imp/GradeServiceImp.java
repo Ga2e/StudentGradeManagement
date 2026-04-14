@@ -5,8 +5,6 @@ import java.util.List;
 
 import org.ga2e.project.module.Class.entity.Class;
 import org.ga2e.project.module.Class.repo.ClassRepo;
-import org.ga2e.project.module.Course.entiry.MajorCourse;
-import org.ga2e.project.module.Course.repo.ElectiveCourseRepo;
 import org.ga2e.project.module.Grade.dto.GradeAddDTO;
 import org.ga2e.project.module.Grade.dto.GradeUpdateDTO;
 import org.ga2e.project.module.Grade.entity.Grade;
@@ -33,7 +31,6 @@ public class GradeServiceImp implements GradeService {
   private final GradeMapper gradeMapper;
   private final ClassRepo classRepo;
   private final UserRepo userRepo;
-  private final ElectiveCourseRepo electiveCourseRepo;
 
   @Override
   public List<GradeResp> findAll() {
@@ -87,48 +84,6 @@ public class GradeServiceImp implements GradeService {
         .orElseThrow(() -> new RuntimeException("user is not exist"));
     GradeResp resp = gradeMapper.entityToResp(grade);
     return resp;
-
-  }
-
-  @Override
-  public List<GradeResp> findMajorGradesByStudentId(Long id) {
-
-    User student = userRepo.findById(id)
-        .orElseThrow(() -> new RuntimeException("user not exist"));
-    return this.findMajorGradesByClassId(student.getId());
-  }
-
-  @Override
-  public List<GradeResp> findMajorGradesByClassId(Long id) {
-    Class clazz = classRepo.findById(id)
-        .orElseThrow(() -> new RuntimeException("class not exist"));
-
-    List<Long> courses = clazz.getCourses().stream()
-        .map(MajorCourse::getId)
-        .toList();
-
-    List<Grade> grades = gradeRepo.findByStudentIdAndCourseIdIn(id, courses);
-    return gradeMapper.entitysToResps(grades);
-
-  }
-
-  @Override
-  public List<GradeResp> findElectiveGradesByStudentId(Long id) {
-    userRepo.findById(id)
-        .orElseThrow(() -> new RuntimeException("user not exist"));
-
-    List<Grade> grades = gradeRepo.findByStudentId(id);
-    return gradeMapper.entitysToResps(grades);
-
-  }
-
-  @Override
-  public List<GradeResp> findElectiveGradesByCourseId(Long id) {
-    electiveCourseRepo.findById(id)
-        .orElseThrow(() -> new RuntimeException("elective course not exist"));
-
-    List<Grade> grades = gradeRepo.findByCourseId(id);
-    return gradeMapper.entitysToResps(grades);
 
   }
 

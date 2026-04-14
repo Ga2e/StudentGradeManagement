@@ -4,11 +4,18 @@ import instance from "./axios";
 /**
  * 分页查询学生
  */
-export const getStudentPage = async ({ pageNum = 1, pageSize = 10 }) => {
+export const getStudentPage = async ({ pageNum = 1, pageSize = 10, keyword, type }) => {
+  const params = { page: pageNum - 1, size: pageSize, sort: "id,asc" };
+  if (keyword) {
+    params.keyword = keyword;
+  }
+  if (type) {
+    params.type = type;
+  }
   const res = await instance.get("/student/page", {
-    params: { page: pageNum - 1, size: pageSize, sort: "id,asc" },
+    params,
   });
-  return res.data.data; // { content: [...], totalElements: 66 }
+  return res.data; // { content: [...], totalElements: 66 }
 };
 
 /**

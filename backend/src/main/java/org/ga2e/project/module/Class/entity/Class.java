@@ -1,13 +1,20 @@
 package org.ga2e.project.module.Class.entity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
-import org.ga2e.project.module.Course.entiry.MajorCourse;
+import java.util.Set;
+
+import org.ga2e.project.common.constant.ClassType;
 import org.ga2e.project.module.Professional.entity.Professional;
+import org.ga2e.project.module.User.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -35,13 +42,13 @@ public class Class {
   @Column(name = "year", nullable = false)
   private Long year;
 
+
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "professional_id")
   private Professional professional;
 
-  @OneToMany(fetch = FetchType.LAZY)
-  @JoinColumn(name = "class_id")
-  private List<MajorCourse> courses;
+
 
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -49,6 +56,8 @@ public class Class {
 
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt = LocalDateTime.now();
+
+
 
   @PreUpdate
   private void preUpdate() {

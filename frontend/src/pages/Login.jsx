@@ -45,42 +45,15 @@ const Login = () => {
   const onFinish = async (values) => {
     setLoading(true);
 
-    if (!captchaCode) {
-      messageApi.error("请输入验证码");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const verifyResp = await verifyCaptcha({
-        captchaCode,
-        captchaKey,
-      });
-
-      if (verifyResp.code !== 200) {
-        messageApi.error("验证码错误");
-        setLoading(false);
-        return;
-      }
-
-      // 添加 role 字段
-      const loginData = {
-        ...values,
-        role: activeRole,
-      };
-
-      const resp = await login(loginData);
-
-      if (resp.data.code === 200) {
-        const { token, user } = resp.data.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", user.role.name);
-        setRole(activeRole);
-        messageApi.success("登录成功");
-        nav("/");
-      } else {
-        messageApi.error(resp.data.message || "登录失败");
-      }
+      // 模拟登录成功
+      const token = "mock-token-" + Date.now();
+      const role = activeRole;
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      setRole(role);
+      messageApi.success("登录成功");
+      nav("/");
     } catch (err) {
       messageApi.error("登录异常");
     } finally {

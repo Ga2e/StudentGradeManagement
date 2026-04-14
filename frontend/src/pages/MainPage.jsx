@@ -1,55 +1,81 @@
-import { Breadcrumb, Button, Flex, Layout, Menu, Space, theme } from "antd"
+import React, { useState } from "react";
+import { Breadcrumb, Button, Flex, Layout, Menu, Space, theme, Dropdown, Avatar } from "antd"
 import { Content, Footer, Header } from "antd/es/layout/layout"
 import Sider from "antd/es/layout/Sider"
 import ThemeSwitch from "../component/ThemeSwitch";
 import Title from "antd/es/typography/Title";
-import { useState } from "react";
 import { Outlet, useNavigate } from "react-router";
 import Bell from "../icon/Bell/Bell";
 import { PermissionProvider, usePermissionContext } from "../context/Permission";
 import { ADMIN } from "../constant/Role";
 import { logout } from "../service/auth";
 import { useMessage } from "../context/MessageProvider";
+import { HomeOutlined, SettingOutlined, BookOutlined, TeamOutlined, FileTextOutlined, UserOutlined, UsergroupAddOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const adminItems = [
+
   {
     key: 'institute',
-    label: 'Institute',
+    label: '学院管理',
+    icon: <SettingOutlined />,
   },
   {
     key: 'professional',
-    label: 'Professional',
+    label: '专业管理',
+    icon: <BookOutlined />,
+    children: [
+      {
+        key: 'professional/list',
+        label: '专业列表',
+      },
+      {
+        key: 'professional/plan',
+        label: '培养方案',
+      },
+    ],
   },
   {
     key: 'class',
-    label: 'Class',
+    label: '班级管理',
+    icon: <TeamOutlined />,
   },
   {
     key: 'course',
-    label: 'Course',
+    label: '课程管理',
+    icon: <FileTextOutlined />,
   },
   {
     key: 'teacher',
-    label: 'Teacher',
+    label: '教师管理',
+    icon: <UserOutlined />,
   },
   {
     key: 'student',
-    label: 'Student',
+    label: '学生管理',
+    icon: <UsergroupAddOutlined />,
   },
   {
     key: 'grade',
-    label: 'grade',
+    label: '成绩管理',
+    icon: <AppstoreOutlined />,
   },
-
-
-
-
 ];
 
 const studentItems = [
   {
     key: '/student/grade',
-    label: 'grade',
+    label: '我的成绩',
+    icon: <FileTextOutlined />,
+  },
+  {
+    key: '/student/gradechart',
+    label: '成绩分析',
+    icon: <AppstoreOutlined />,
+  },
+  {
+    key: '/student/course-selection',
+    label: '课程选择',
+    icon: <BookOutlined />,
   },
 
 
@@ -65,31 +91,68 @@ const MainPage = () => {
   }
   const { messageApi } = useMessage()
   const nav = useNavigate()
-  const { role, _ } = usePermissionContext()
+  const { role, user } = usePermissionContext()
   const handleClick = async () => {
-
-    const resp = await logout()
-    console.log(resp.data)
-    if (resp.data.code === 200) {
+    try {
+      // 尝试调用后端 logout 接口
+      await logout()
+    } catch (error) {
+      // 如果后端没有实现 logout 接口，直接清除本地存储并跳转
+      console.log("Logout API not implemented, clearing local storage directly")
+    } finally {
+      // 无论后端是否实现 logout 接口，都清除本地存储并跳转
       localStorage.removeItem('role')
       localStorage.removeItem('token')
-      nav("/login")
+      // 使用 window.location.href 确保页面刷新并跳转到登录页面
+      window.location.href = "/login"
     }
-    else {
-      messageApi.error(resp.data.message)
-    }
-
   }
+
+  const menuItems = [
+    {
+      key: 'logout',
+      label: '退出',
+      onClick: handleClick,
+    },
+  ]
+
+
   return (
     <Layout style={{ height: '100vh', transition: 'all 0.3s ease' }}>
-      <Header style={{ display: "flex", alignItems: 'center', padding: '0 24px' }}>
+      <Header style={{ display: "flex", alignItems: 'center', padding: '0 24px', height: '60px' }}>
         <Title level={2} style={{ fontWeight: 'bolder', margin: 0, marginRight: 'auto' }}>
           Easy Study
         </Title>
         <Flex align="center" gap={15}>
-          <Button onClick={handleClick}>
-            logout
-          </Button>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#333', margin: '0' }}>
+              {(() => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                return `${year}/${month}/${day}`;
+              })()}
+            </div>
+          </div>
+          <div style={{ textAlign: 'left', marginLeft: '15px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1890ff', margin: '0' }}>
+              {(() => {
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+              })()}
+            </div>
+          </div>
+          <Dropdown menu={{ items: menuItems }} trigger={['hover']}>
+            <div style={{ cursor: 'pointer' }}>
+              <Avatar size={40} style={{ backgroundColor: '#1890ff' }}>
+                {role === ADMIN ? `管理员` : `学生：张三`}
+              </Avatar>
+            </div>
+          </Dropdown>
           <Bell />
           <ThemeSwitch />
         </Flex>
@@ -103,11 +166,12 @@ const MainPage = () => {
           onCollapse={handleCollapse}
         >
           <Menu
-            inlineCollapsed={collapsed}
             items={role === ADMIN ? adminItems : studentItems}
             mode="inline"
-            style={{ height: '100%', background: token.Layout?.siderBg }}
+            inlineCollapsed={collapsed}
+            style={{ height: '100%', background: token.Layout?.siderBg, padding: '16px 0' }}
             onClick={(e) => nav(e.key)}
+            itemStyle={{ margin: '8px 0' }}
           />
         </Sider>
 

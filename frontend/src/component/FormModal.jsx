@@ -13,16 +13,18 @@ const FormModal = ({
   submitText = '确定',
   cancelText = '取消',
   width = 520,
+  form: customForm,
   ...modalProps
 }) => {
-  const [form] = Form.useForm();
+  // 只有在没有提供 customForm 时，才创建一个新的 form 实例
+  const [form] = customForm ? [customForm] : Form.useForm();
+  const usedForm = customForm || form;
 
   // 提交
   const handleOk = async () => {
     try {
-      const values = await form.validateFields();
+      const values = await usedForm.validateFields();
       await onSubmit(values);
-      form.resetFields();
     } catch (error) {
       console.log('表单验证失败或提交出错:', error);
     }
@@ -30,8 +32,8 @@ const FormModal = ({
 
   // 取消
   const handleCancel = () => {
-    form.resetFields();
-    onCancel && onCancel(form.getFieldsValue());
+    usedForm.resetFields();
+    onCancel && onCancel(usedForm.getFieldsValue());
   };
 
   // 打开时回显，关闭时清空
@@ -48,7 +50,7 @@ const FormModal = ({
       width={width}
       {...modalProps}
     >
-      <Form form={form} initialValues={initialValues} layout="vertical">
+      <Form form={usedForm} initialValues={initialValues} layout="vertical">
         {children}
       </Form>
     </Modal>

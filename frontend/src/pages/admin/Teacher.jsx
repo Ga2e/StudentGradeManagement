@@ -28,7 +28,7 @@ import FormModal from "../../component/FormModal";
 const { Option } = Select;
 
 const columns = [
-  { title: "ID", dataIndex: "id", width: 80 },
+  { title: "ID", dataIndex: "id", width: 80, render: (_, record, index) => index + 1 },
   { title: "工号", dataIndex: "code" },
   { title: "姓名", dataIndex: ["teacherProfile", "name"] },
   { title: "性别", dataIndex: ["teacherProfile", "gender"] },
@@ -39,7 +39,7 @@ const columns = [
   {
     title: "入职日期",
     dataIndex: ["teacherProfile", "hireDate"],
-    render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+    render: (date) => (date ? new Date(date).toLocaleDateString() : "-")
   },
 ];
 
@@ -57,6 +57,10 @@ const Teacher = () => {
   const [total, setTotal] = useState(0);
   const [data, setData] = useState([]);
 
+  // 搜索相关状态
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState('code'); // code: 工号, name: 姓名
+
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
@@ -69,20 +73,40 @@ const Teacher = () => {
   }, [data]);
 
   // 刷新列表
-  const refresh = async (page = pageNum) => {
+  const refresh = async (page = pageNum, keyword = searchKeyword, type = searchType) => {
     setLoading(true);
     try {
-      const res = await getTeacherPage({ pageNum: page, pageSize });
-      setData(res.content || []);
-      setTotal(res.totalElements || 0);
+      console.log('调用 getTeacherPage', { pageNum: page, pageSize, keyword, type });
+      const res = await getTeacherPage({ 
+        pageNum: page, 
+        pageSize,
+        keyword: keyword,
+        type: type
+      });
+      console.log('getTeacherPage 返回', res);
+      setData(res.data.content || []);
+      setTotal(res.data.totalElements || 0);
       setPageNum(page);
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
-    } catch {
+    } catch (error) {
+      console.error('加载失败', error);
       messageApi.error("加载失败");
     } finally {
       setLoading(false);
     }
+  };
+
+  // 搜索处理
+  const handleSearch = () => {
+    refresh(1); // 搜索时从第一页开始
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    setSearchKeyword('');
+    setSearchType('code');
+    refresh(1, '', 'code'); // 重置时从第一页开始，使用空的搜索参数
   };
 
   useEffect(() => {
@@ -190,7 +214,7 @@ const Teacher = () => {
       <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         {/* 顶部操作栏 */}
         <div style={{ padding: "16px 24px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
             <Typography.Title level={4} style={{ margin: 0 }}>教师管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增教师</Button>
@@ -198,6 +222,25 @@ const Teacher = () => {
               <Button onClick={handleUpdate} disabled={!hasSelected}>修改基本信息</Button>
               <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
             </Space>
+          </div>
+          {/* 搜索框 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Select 
+              value={searchType} 
+              onChange={setSearchType} 
+              style={{ width: 120 }}
+            >
+              <Option value="code">工号</Option>
+              <Option value="name">姓名</Option>
+            </Select>
+            <Input 
+              placeholder="请输入搜索关键词" 
+              value={searchKeyword} 
+              onChange={(e) => setSearchKeyword(e.target.value)} 
+              style={{ width: 300 }}
+            />
+            <Button type="primary" onClick={handleSearch}>查找</Button>
+            <Button onClick={handleReset}>重置</Button>
           </div>
         </div>
 

@@ -1,21 +1,18 @@
-package org.ga2e.project.module.Course.entiry;
+package org.ga2e.project.module.Course.entity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
-import org.ga2e.project.module.User.entity.User;
-
+import org.ga2e.project.common.constant.CourseType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,11 +36,9 @@ public class Course {
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(name = "course_open", joinColumns = { @JoinColumn(name = "course_id") }, inverseJoinColumns = {
-      @JoinColumn(name = "user_id") })
-  private List<User> teachers;
-
+  @Transient
+  @Enumerated(EnumType.STRING)
+  private CourseType type;
   @Column(name = "credits", nullable = false, precision = 3, scale = 1)
   private BigDecimal credits;
 

@@ -70,7 +70,7 @@ public class AuthenticateServiceImp implements AuthenticateService {
           .token(jwt)
           .tokenType("Bearer")
           .build();
-      return null;
+      return ApiResult.success(loginResp);
     } else if (user.getRole().getName().contains("student")) {
       LoginResp<StudentResp> loginResp = LoginResp.<StudentResp>builder()
           .token(jwt)

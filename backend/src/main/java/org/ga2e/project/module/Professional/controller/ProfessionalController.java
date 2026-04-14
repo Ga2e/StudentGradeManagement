@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.ga2e.project.common.response.ApiResult;
 import org.ga2e.project.module.Professional.dto.ProfessionalAddDTO;
+import org.ga2e.project.module.Professional.dto.ProfessionalPlanDTO;
 import org.ga2e.project.module.Professional.dto.ProfessionalUpdateDTO;
+import org.ga2e.project.module.Professional.resp.ProfessionalPlanResp;
 import org.ga2e.project.module.Professional.resp.ProfessionalResp;
 import org.ga2e.project.module.Professional.service.ProfessionalService;
 import org.springframework.data.domain.Page;
@@ -66,23 +68,15 @@ public class ProfessionalController {
 
   @DeleteMapping("/{id}")
   public ApiResult<?> deleteById(@PathVariable Long id) {
-    try {
-      professionalService.deleteById(id);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    professionalService.deleteById(id);
+    return ApiResult.success();
 
   }
 
   @PutMapping("/")
   public ApiResult<?> updateById(@RequestBody @Valid ProfessionalUpdateDTO professionalUpdateDTO) {
-    try {
-      professionalService.update(professionalUpdateDTO);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    professionalService.update(professionalUpdateDTO);
+    return ApiResult.success();
 
   }
 
@@ -95,6 +89,45 @@ public class ProfessionalController {
       return ApiResult.error(e.getMessage());
     }
 
+  }
+
+  // 培养方案相关接口
+  @PostMapping("/plan")
+  public ApiResult<?> addPlan(@RequestBody @Valid ProfessionalPlanDTO professionalPlanDTO) {
+    try {
+      professionalService.addPlan(professionalPlanDTO);
+      return ApiResult.success();
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
+  }
+
+  @GetMapping("/plan/{professionalId}")
+  public ApiResult<ProfessionalPlanResp> getPlanByProfessionalId(@PathVariable Long professionalId) {
+    try {
+      return ApiResult.success(professionalService.getPlanByProfessionalId(professionalId));
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
+  }
+
+  @GetMapping("/plan")
+  public ApiResult<?> getAllPlans() {
+    try {
+      return ApiResult.success(professionalService.getAllPlans());
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
+  }
+
+  @DeleteMapping("/plan/{professionalId}")
+  public ApiResult<?> deletePlan(@PathVariable Long professionalId) {
+    try {
+      professionalService.deletePlan(professionalId);
+      return ApiResult.success();
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
   }
 
 }
