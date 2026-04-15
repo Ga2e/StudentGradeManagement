@@ -23,16 +23,11 @@ const adminItems = [
     key: 'professional',
     label: '专业管理',
     icon: <BookOutlined />,
-    children: [
-      {
-        key: 'professional/list',
-        label: '专业列表',
-      },
-      {
-        key: 'professional/plan',
-        label: '培养方案',
-      },
-    ],
+  },
+  {
+    key: 'plan',
+    label: '培养方案',
+    icon: <FileTextOutlined />,
   },
   {
     key: 'class',
@@ -171,7 +166,6 @@ const MainPage = () => {
             inlineCollapsed={collapsed}
             style={{ height: '100%', background: token.Layout?.siderBg, padding: '16px 0' }}
             onClick={(e) => nav(e.key)}
-            itemStyle={{ margin: '8px 0' }}
           />
         </Sider>
 

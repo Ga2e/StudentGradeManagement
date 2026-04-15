@@ -10,4 +10,7 @@ import java.util.List;
 public interface ProfessionalCourseRepo extends JpaRepository<ProfessionalCourse, Long> {
   List<ProfessionalCourse> findByProfessionalId(Long professionalId);
   void deleteByProfessionalId(Long professionalId);
+  void deleteByProfessionalIdAndVersionAndGrade(Long professionalId, String version, String grade);
+  List<ProfessionalCourse> findByProfessionalIdAndVersionAndGrade(Long professionalId, String version, String grade);
+  List<Object[]> findDistinctVersionAndGradeByProfessionalId(Long professionalId);
 }

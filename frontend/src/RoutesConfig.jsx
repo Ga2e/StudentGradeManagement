@@ -6,6 +6,7 @@ import { ADMIN, ANY, STUDENT } from "./constant/Role";
 import StudentProfile from "./pages/student/StudentProfile";
 import Institute from "./pages/admin/Institute";
 import Professional from "./pages/admin/Professional";
+import Plan from "./pages/admin/Plan";
 import Class from "./pages/admin/Class";
 import Teacher from "./pages/admin/Teacher";
 import Course from "./pages/admin/Course";
@@ -78,12 +79,12 @@ const RoutesConfig = () => {
             </RoleCheck>
           }>
           </Route>
-          <Route path="plan" element={
-            <RoleCheck required={ADMIN}>
-              <Professional></Professional>
-            </RoleCheck>
-          }>
-          </Route>
+        </Route>
+        <Route path="plan" element={
+          <RoleCheck required={ADMIN}>
+            <Plan></Plan>
+          </RoleCheck>
+        }>
         </Route>
         <Route path="class" element={
           <RoleCheck required={ADMIN}>

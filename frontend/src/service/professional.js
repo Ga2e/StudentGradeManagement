@@ -16,6 +16,14 @@ export const getProfessionalPage = async ({ pageNum = 1, pageSize = 10 }) => {
 };
 
 /**
+ * 获取所有专业
+ */
+export const getAllProfessional = async () => {
+  const res = await instance.get("/professional");
+  return res.data;
+};
+
+/**
  * 新增专业
  */
 export const addProfessional = async (data) => {
@@ -68,5 +76,13 @@ export const getAllProfessionalPlans = async () => {
  */
 export const deleteProfessionalPlan = async (professionalId) => {
   const res = await instance.delete(`/professional/plan/${professionalId}`);
+  return res.data;
+};
+
+/**
+ * 删除指定版本和年级的培养方案
+ */
+export const deleteProfessionalPlanByVersionAndGrade = async (professionalId, version, grade) => {
+  const res = await instance.delete(`/professional/plan/${professionalId}/${version}/${grade}`);
   return res.data;
 };

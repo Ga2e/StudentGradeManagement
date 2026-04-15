@@ -20,7 +20,7 @@ import {
   updateClass,
   deleteClass,
 } from "../../service/class";
-import { getProfessionalPage } from "../../service/professional"; // 复用专业接口
+import { getAllGradePlans } from "../../service/plan"; // 复用培养方案接口
 import FormModal from "../../component/FormModal";
 
 
@@ -30,17 +30,8 @@ const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
   { title: "班级名称", dataIndex: "name" },
   { title: "开设年份", dataIndex: "year" },
-  {
-    title: "所属专业",
-    dataIndex: ["professional", "name"],
-    render: (text) => text || "-",
-  },
-
-  {
-    title: "创建时间",
-    dataIndex: "createdAt",
-    render: (time) => (time ? new Date(time).toLocaleString() : "-"),
-  },
+  { title: "执行培养方案", dataIndex: ["gradePlan", "versionPlanNumber"], render: (text) => text || "-" },
+  { title: "创建时间", dataIndex: "createdAt", render: (time) => (time ? new Date(time).toLocaleString() : "-") },
 ];
 
 const Class = () => {
@@ -60,7 +51,7 @@ const Class = () => {
   const [data, setData] = useState([]);
 
   // 下拉数据
-  const [professionalList, setProfessionalList] = useState([]);
+  const [gradePlanList, setGradePlanList] = useState([]);
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
@@ -71,20 +62,20 @@ const Class = () => {
     return data.map((item) => ({ ...item, key: item.id }));
   }, [data]);
 
-  // 加载专业列表（用于下拉）
-  const loadProfessionals = async () => {
+  // 加载培养方案列表（用于下拉）
+  const loadGradePlans = async () => {
     try {
-      const res = await getProfessionalPage({ pageNum: 1, pageSize: 999 });
-      const professionals = res.data?.content || [];
-      console.log('专业列表:', professionals);
-      setProfessionalList(professionals);
+      const res = await getAllGradePlans();
+      const gradePlans = res.data || [];
+      console.log('培养方案列表:', gradePlans);
+      setGradePlanList(gradePlans);
       // 设置表单默认值
-      if (professionals.length > 0) {
-        addForm.setFieldsValue({ professionalId: professionals[0].id });
-        updateForm.setFieldsValue({ professionalId: professionals[0].id });
+      if (gradePlans.length > 0) {
+        addForm.setFieldsValue({ gradePlanId: gradePlans[0].id });
+        updateForm.setFieldsValue({ gradePlanId: gradePlans[0].id });
       }
     } catch (error) {
-      console.log('加载专业列表失败:', error);
+      console.log('加载培养方案列表失败:', error);
       // 不显示错误信息
     }
   };
@@ -112,16 +103,16 @@ const Class = () => {
 
   useEffect(() => {
     refresh();
-    loadProfessionals();
+    loadGradePlans();
   }, []);
 
-  // 当专业列表加载完成后，设置表单默认值
+  // 当培养方案列表加载完成后，设置表单默认值
   useEffect(() => {
-    if (professionalList.length > 0) {
-      addForm.setFieldsValue({ type: 'ADMIN_CLSS', professionalId: professionalList[0].id });
-      updateForm.setFieldsValue({ type: 'ADMIN_CLSS', professionalId: professionalList[0].id });
+    if (gradePlanList.length > 0) {
+      addForm.setFieldsValue({ gradePlanId: gradePlanList[0].id });
+      updateForm.setFieldsValue({ gradePlanId: gradePlanList[0].id });
     }
-  }, [professionalList]);
+  }, [gradePlanList]);
 
   const handleSelectChange = (keys, rows) => {
     setSelectedRowKeys(keys);
@@ -153,8 +144,7 @@ const Class = () => {
       id: row.id,
       name: row.name,
       year: row.year,
-      type: row.type,
-      professionalId: row.professional?.id,
+      gradePlanId: row.gradePlan?.id,
     });
     setUpdateOpen(true);
   };
@@ -245,16 +235,10 @@ const Class = () => {
           <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
             <InputNumber style={{ width: "100%" }} placeholder="如：2023" />
           </Form.Item>
-          <Form.Item name="type" label="班级类型" rules={[{ required: true }]}>
-            <Select placeholder="请选择班级类型">
-              <Option value="ADMIN_CLSS">行政班</Option>
-              <Option value="TEACHER_CLASS">教学班</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="professionalId" label="所属专业" rules={[{ required: true }]}>
-            <Select placeholder="请选择专业">
-              {professionalList.map(p => (
-                <Option key={p.id} value={p.id}>{p.name}</Option>
+          <Form.Item name="gradePlanId" label="执行培养方案" rules={[{ required: true }]}>
+            <Select placeholder="请选择培养方案">
+              {gradePlanList.map(gp => (
+                <Option key={gp.id} value={gp.id}>{gp.versionPlanNumber} - {gp.grade}</Option>
               ))}
             </Select>
           </Form.Item>
@@ -268,16 +252,10 @@ const Class = () => {
           <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="type" label="班级类型" rules={[{ required: true }]}>
-            <Select placeholder="请选择班级类型">
-              <Option value="ADMIN_CLSS">行政班</Option>
-              <Option value="TEACHER_CLASS">教学班</Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="professionalId" label="所属专业" rules={[{ required: true }]}>
-            <Select placeholder="请选择专业">
-              {professionalList.map(p => (
-                <Option key={p.id} value={p.id}>{p.name}</Option>
+          <Form.Item name="gradePlanId" label="执行培养方案" rules={[{ required: true }]}>
+            <Select placeholder="请选择培养方案">
+              {gradePlanList.map(gp => (
+                <Option key={gp.id} value={gp.id}>{gp.versionPlanNumber} - {gp.grade}</Option>
               ))}
             </Select>
           </Form.Item>

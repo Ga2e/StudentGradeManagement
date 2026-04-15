@@ -1,9 +1,7 @@
 package org.ga2e.project.module.Class.mapper.decorator;
 
-import java.util.List;
-
-import org.ga2e.project.module.Professional.entity.Professional;
-import org.ga2e.project.module.Professional.repo.ProfessionalRepo;
+import org.ga2e.project.module.Professional.entity.GradePlan;
+import org.ga2e.project.module.Professional.repo.GradePlanRepo;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -14,11 +12,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClassDecorator {
 
-  private final ProfessionalRepo professionalRepo;
+  private final GradePlanRepo gradePlanRepo;
 
-  public Professional idToEntity(Long id) {
-    return professionalRepo.findById(id)
-        .orElseThrow(() -> new RuntimeException("institute not existed"));
+  public GradePlan idToEntity(Long id) {
+    return gradePlanRepo.findById(id)
+        .orElseThrow(() -> new RuntimeException("grade plan not existed"));
   }
 
 }

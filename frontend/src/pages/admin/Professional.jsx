@@ -17,15 +17,10 @@ import {
   deleteProfessional,
   getProfessionalPage,
   updateProfessional,
-  addProfessionalPlan,
-  getAllProfessionalPlans,
-  deleteProfessionalPlan,
 } from "../../service/professional.js";
-import { getAllCourse } from "../../service/course.js";
 import FormModal from "../../component/FormModal";
 import { getAllInstitute } from "../../service/institute.js";
 import { useMessage } from "../../context/MessageProvider.jsx";
-import { useLocation } from "react-router-dom";
 const columns = [
   {
     title: "ID",
@@ -53,12 +48,10 @@ const Professional = () => {
   const selectedRowRef = useRef(null)
   const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const { messageApi } = useMessage()
-  const location = useLocation();
   
   // 表单实例
   const [addForm] = Form.useForm();
   const [updateForm] = Form.useForm();
-  const [planForm] = Form.useForm(); // 培养方案表单
 
   // 全局状态
   const [loading, setLoading] = useState(true);
@@ -69,21 +62,11 @@ const Professional = () => {
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [data, setData] = useState([]);
-  const [planData, setPlanData] = useState([]); // 培养方案数据
-  const [planTotal, setPlanTotal] = useState(0); // 培养方案总数
   const institute = useRef([]);
-  const [courseList, setCourseList] = useState([]); // 课程列表
 
   // 弹窗
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [planOpen, setPlanOpen] = useState(false); // 培养方案弹窗
-  const [planViewOpen, setPlanViewOpen] = useState(false); // 培养方案查看弹窗
-  const [planEditOpen, setPlanEditOpen] = useState(false); // 培养方案编辑弹窗
-  const [currentPlan, setCurrentPlan] = useState(null); // 当前操作的培养方案
-  
-  // 获取当前路由路径
-  const currentPath = location.pathname;
 
   const hasSelected = selectedRowKeys.length > 0;
 
@@ -95,37 +78,6 @@ const Professional = () => {
       key: item.id,
     }));
   }, [data]);
-
-  // 培养方案表格数据加 key
-  const planTableData = useMemo(() => {
-    return planData.map((item) => ({
-      ...item,
-      key: item.id,
-    }));
-  }, [planData]);
-
-  // 培养方案表格列
-  const planColumns = useMemo(() => [
-    {
-      title: "ID",
-      dataIndex: "id",
-      width: 100,
-    },
-    {
-      title: "专业名称",
-      dataIndex: "professionalName",
-    },
-    {
-      title: "Action",
-      render: (record) => (
-        <Space>
-          <Button size="small" type="primary" onClick={() => handleViewPlan(record)}>查看</Button>
-          <Button size="small" onClick={() => handleEditPlan(record)}>编辑</Button>
-          <Button size="small" danger onClick={() => handleDeletePlan(record)}>删除</Button>
-        </Space>
-      )
-    }
-  ], []);
 
   // 刷新专业数据
   const refresh = async (page = pageNum) => {
@@ -149,47 +101,9 @@ const Professional = () => {
     }
   };
 
-  // 刷新培养方案数据
-  const refreshPlan = async (page = pageNum) => {
-    setLoading(true);
-
-    try {
-      // 调用后端接口获取所有培养方案
-      const res = await getAllProfessionalPlans();
-      console.log('Professional plan data response:', res);
-      // 正确处理后端返回的数据结构
-      setPlanData(res.data || []);
-      setPlanTotal(res.data?.length || 0);
-      setPageNum(page);
-      // 刷新后清空选择
-      setSelectedRowKeys([]);
-      selectedRowRef.current = null;
-    } catch (err) {
-      console.log('加载培养方案数据失败:', err);
-      messageApi.error("加载培养方案数据失败");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 加载课程列表
-  const loadCourses = async () => {
-    try {
-      const res = await getAllCourse();
-      setCourseList(res?.data || []);
-    } catch {
-      setCourseList([]);
-    }
-  };
-
   useEffect(() => {
-    if (currentPath === '/professional/plan') {
-      refreshPlan();
-    } else {
-      refresh();
-    }
-    loadCourses();
-  }, [currentPath]);
+    refresh();
+  }, []);
 
 
 
@@ -297,204 +211,75 @@ const Professional = () => {
 
   };
 
-  // 打开培养方案弹窗
-  const handleOpenPlan = () => {
-    if (!selectedRowRef.current) {
-      messageApi.warning("请先选择一个专业");
-      return;
-    }
-    planForm.resetFields();
-    setPlanOpen(true);
-  };
-
-  // 提交培养方案
-  const handlePlanOk = async () => {
-    const values = await planForm.validateFields();
-    setConfirmLoading(true);
-    try {
-      // 调用后端接口保存培养方案
-      const res = await addProfessionalPlan({
-        professionalId: selectedRowRef.current.id,
-        courseIds: values.courseIds,
-        semesters: values.courseIds.map(() => 1) // 暂时默认所有课程都在第1学期
-      });
-      // 检查后端返回的数据结构
-      if (res.code === 200) {
-        messageApi.success("培养方案添加成功");
-        setPlanOpen(false);
-        refreshPlan(); // 刷新培养方案列表
-      } else {
-        messageApi.error(res.message || "培养方案添加失败");
-      }
-    } catch (err) {
-      console.log('保存培养方案失败:', err);
-      messageApi.error("培养方案添加失败");
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
-
-  // 查看培养方案
-  const handleViewPlan = (record) => {
-    setCurrentPlan(record);
-    setPlanViewOpen(true);
-  };
-
-  // 编辑培养方案
-  const handleEditPlan = (record) => {
-    setCurrentPlan(record);
-    // 这里可以根据record.id获取详细的培养方案信息，然后填充到表单中
-    setPlanEditOpen(true);
-  };
-
-  // 删除培养方案
-  const handleDeletePlan = async (record) => {
-    try {
-      const res = await deleteProfessionalPlan(record.id);
-      // 检查后端返回的数据结构
-      if (res.code === 200) {
-        messageApi.success("培养方案删除成功");
-        refreshPlan(); // 刷新培养方案列表
-      } else {
-        messageApi.error(res.message || "培养方案删除失败");
-      }
-    } catch (err) {
-      console.log('删除培养方案失败:', err);
-      messageApi.error("培养方案删除失败");
-    }
-  };
-
   return (
     <>
-      {currentPath === '/professional/plan' ? (
-        <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          {/* 顶部栏 */}
-          <div
-            style={{
-              padding: "16px 24px",
-              background: "#fff",
-              borderBottom: "1px solid #f0f0f0",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              培养方案管理
-            </Typography.Title>
-            <Button type="primary" onClick={handleOpenPlan}>
-              添加培养方案
+      <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+        {/* 顶部栏 */}
+        <div
+          style={{
+            padding: "16px 24px",
+            background: "#fff",
+            borderBottom: "1px solid #f0f0f0",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Typography.Title level={4} style={{ margin: 0 }}>
+            专业管理
+          </Typography.Title>
+          <Space>
+            <Button type="primary" onClick={handleAdd}>
+              新增专业
             </Button>
-          </div>
+            <Button danger onClick={handleDelete} disabled={!hasSelected}>
+              删除
+            </Button>
+            <Button onClick={handleUpdate} disabled={!hasSelected}>
+              修改
+            </Button>
+          </Space>
+        </div>
 
-          {/* 表格区域 */}
-          <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
-            <Table
-              rowSelection={{
-                type: "radio",
-                selectedRowKeys,
-                onChange: handleSelectChange,
-              }}
-              columns={planColumns}
-              dataSource={planTableData}
-              loading={loading}
-              pagination={false}
-              scroll={{ y: "100%" }}
-              style={{ height: "100%" }}
-              locale={{ emptyText: <Empty description="暂无数据" /> }}
-            />
-          </div>
-
-          {/* 分页 */}
-          <div
-            style={{
-              padding: "16px 24px",
-              background: "#fff",
-              textAlign: "right",
-              flexShrink: 0,
+        {/* 表格区域 */}
+        <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
+          <Table
+            rowSelection={{
+              type: "radio",
+              selectedRowKeys,
+              onChange: handleSelectChange,
             }}
-          >
-            <Pagination
-              current={pageNum}
-              pageSize={pageSize}
-              total={planTotal}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(t) => `共 ${t} 条`}
-              onChange={(p) => refreshPlan(p)}
-            />
-          </div>
-        </Flex>
-      ) : (
-        <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          {/* 顶部栏 */}
-          <div
-            style={{
-              padding: "16px 24px",
-              background: "#fff",
-              borderBottom: "1px solid #f0f0f0",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Typography.Title level={4} style={{ margin: 0 }}>
-              专业管理
-            </Typography.Title>
-            <Space>
-              <Button type="primary" onClick={handleAdd}>
-                新增专业
-              </Button>
-              <Button danger onClick={handleDelete} disabled={!hasSelected}>
-                删除
-              </Button>
-              <Button onClick={handleUpdate} disabled={!hasSelected}>
-                修改
-              </Button>
-            </Space>
-          </div>
+            columns={columns}
+            dataSource={tableData}
+            loading={loading}
+            pagination={false}
+            scroll={{ y: "100%" }}
+            style={{ height: "100%" }}
+            locale={{ emptyText: <Empty description="暂无数据" /> }}
+          />
+        </div>
 
-          {/* 表格区域 */}
-          <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
-            <Table
-              rowSelection={{
-                type: "radio",
-                selectedRowKeys,
-                onChange: handleSelectChange,
-              }}
-              columns={columns}
-              dataSource={tableData}
-              loading={loading}
-              pagination={false}
-              scroll={{ y: "100%" }}
-              style={{ height: "100%" }}
-              locale={{ emptyText: <Empty description="暂无数据" /> }}
-            />
-          </div>
-
-          {/* 分页 */}
-          <div
-            style={{
-              padding: "16px 24px",
-              background: "#fff",
-              textAlign: "right",
-              flexShrink: 0,
-            }}
-          >
-            <Pagination
-              current={pageNum}
-              pageSize={pageSize}
-              total={total}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(t) => `共 ${t} 条`}
-              onChange={(p) => refresh(p)}
-            />
-          </div>
-        </Flex>
-      )}
+        {/* 分页 */}
+        <div
+          style={{
+            padding: "16px 24px",
+            background: "#fff",
+            textAlign: "right",
+            flexShrink: 0,
+          }}
+        >
+          <Pagination
+            current={pageNum}
+            pageSize={pageSize}
+            total={total}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(t) => `共 ${t} 条`}
+            onChange={(p) => refresh(p)}
+          />
+        </div>
+      </Flex>
 
       {/* 新增弹窗 */}
       <FormModal
@@ -545,99 +330,6 @@ const Professional = () => {
           <Form.Item name="instituteId" label="withInstitute" rules={[{ required: true, message: "请选择所属院校" }]}>
             <Select style={{ width: 120 }} options={institute.current.map((value, index) => ({ value: value.id, label: value.name }))}>
 
-            </Select>
-          </Form.Item>
-        </Form>
-      </FormModal>
-
-      {/* 培养方案弹窗 */}
-      <FormModal
-        title="添加培养方案"
-        open={planOpen}
-        onCancel={() => setPlanOpen(false)}
-        onSubmit={handlePlanOk}
-        loading={confirmLoading}
-      >
-        <Form form={planForm} layout="vertical">
-          <div style={{ marginBottom: 16, fontWeight: "bold", color: "#1890ff" }}>
-            当前专业：{selectedRowRef.current?.name || "-"}
-          </div>
-
-          <Form.Item
-            name="courseIds"
-            label="选择课程"
-            rules={[{ required: true, message: "请选择至少一门课程" }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择课程（可多选）"
-              loading={courseList.length === 0}
-              style={{ width: "100%" }}
-            >
-              {courseList.map(c => (
-                <Select.Option key={c.id} value={c.id}>
-                  {c.name} ({c.code})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </FormModal>
-
-      {/* 培养方案查看弹窗 */}
-      <FormModal
-        title="查看培养方案"
-        open={planViewOpen}
-        onCancel={() => setPlanViewOpen(false)}
-        onSubmit={() => setPlanViewOpen(false)}
-        submitText="关闭"
-      >
-        <div>
-          <h3 style={{ marginBottom: 16 }}>{currentPlan?.professionalName} 培养方案</h3>
-          <div style={{ marginBottom: 16 }}>
-            <strong>课程列表：</strong>
-          </div>
-          <Table
-            columns={[
-              { title: "课程名称", dataIndex: "name" },
-              { title: "课程代码", dataIndex: "code" },
-              { title: "学期", dataIndex: "semester" }
-            ]}
-            dataSource={currentPlan?.courses || []}
-            pagination={false}
-          />
-        </div>
-      </FormModal>
-
-      {/* 培养方案编辑弹窗 */}
-      <FormModal
-        title="编辑培养方案"
-        open={planEditOpen}
-        onCancel={() => setPlanEditOpen(false)}
-        onSubmit={() => setPlanEditOpen(false)}
-        loading={confirmLoading}
-      >
-        <Form form={planForm} layout="vertical">
-          <div style={{ marginBottom: 16, fontWeight: "bold", color: "#1890ff" }}>
-            当前专业：{currentPlan?.professionalName || "-"}
-          </div>
-
-          <Form.Item
-            name="courseIds"
-            label="选择课程"
-            rules={[{ required: true, message: "请选择至少一门课程" }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择课程（可多选）"
-              loading={courseList.length === 0}
-              style={{ width: "100%" }}
-            >
-              {courseList.map(c => (
-                <Select.Option key={c.id} value={c.id}>
-                  {c.name} ({c.code})
-                </Select.Option>
-              ))}
             </Select>
           </Form.Item>
         </Form>
