@@ -1,6 +1,6 @@
 package org.ga2e.project.module.Grade.mapper.decorator;
 
-import org.ga2e.project.module.Course.entiry.Course;
+import org.ga2e.project.module.Course.entity.Course;
 import org.ga2e.project.module.Course.repo.CourseRepo;
 import org.ga2e.project.module.User.entity.User;
 import org.ga2e.project.module.User.repo.UserRepo;

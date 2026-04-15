@@ -27,13 +27,5 @@ public interface GradeService {
 
   void batchAdd(List<GradeAddDTO> classs);
 
-  List<GradeResp> findMajorGradesByStudentId(Long id);
-
-  List<GradeResp> findMajorGradesByClassId(Long id);
-
-  List<GradeResp> findElectiveGradesByStudentId(Long id);
-
-  List<GradeResp> findElectiveGradesByCourseId(Long id);
-
   List<GradeResp> findMeGrade();
 }

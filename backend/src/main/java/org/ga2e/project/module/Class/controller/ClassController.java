@@ -7,9 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.ga2e.project.common.response.ApiResult;
-import org.ga2e.project.module.Class.dto.AddCoursesDTO;
 import org.ga2e.project.module.Class.dto.ClassAddDTO;
 import org.ga2e.project.module.Class.dto.ClassUpdateDTO;
+import org.ga2e.project.module.Class.dto.ComposeCoursesDTO;
+import org.ga2e.project.module.Class.pojo.ClassCourseId;
 import org.ga2e.project.module.Class.resp.ClassResp;
 import org.ga2e.project.module.Class.service.ClassService;
 import org.springframework.data.domain.Page;
@@ -45,10 +46,14 @@ public class ClassController {
     }
   }
 
-  @PostMapping("/addCourse")
-  ApiResult<?> addCourse(@Valid @RequestBody AddCoursesDTO addCoursesDTO) {
+  /*
+   * 编排班级课程表
+   */
+
+  @PostMapping("/compose")
+  ApiResult<?> compose(@Valid @RequestBody ComposeCoursesDTO addCoursesDTO) {
     try {
-      classService.classAddCourses(addCoursesDTO);
+      classService.composeCourses(addCoursesDTO);
       return ApiResult.success();
     } catch (Exception e) {
       return ApiResult.error(e.getMessage());
@@ -69,8 +74,18 @@ public class ClassController {
 
   @DeleteMapping("/{id}")
   public ApiResult<?> deleteById(@PathVariable Long id) {
-    try {
-      classService.deleteById(id);
+    classService.deleteById(id);
+    return ApiResult.success();
+
+  }
+
+  @GetMapping("/compose/delete")
+  public ApiResult<?> deleteCourse(@PathVariable ClassCourseId id) {
+
+    try
+
+    {
+      classService.deleteCourse(id);
       return ApiResult.success();
     } catch (Exception e) {
       return ApiResult.error(e.getMessage());

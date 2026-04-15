@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/teacher")
@@ -46,9 +47,11 @@ public class TeacherController {
 
   @GetMapping("/page")
   public ApiResult<Page<TeacherResp>> pageQurey(
-      @PageableDefault(size = 10, page = 1, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+      @PageableDefault(size = 10, page = 1, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) String type) {
 
-    return ApiResult.success(teacherService.pageQurey(pageable));
+    return ApiResult.success(teacherService.pageQurey(pageable, keyword, type));
 
   }
 

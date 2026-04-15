@@ -8,7 +8,9 @@ export const getClassPage = async ({ pageNum = 0, pageSize = 10 }) => {
   const res = await instance.get("/class/page", {
     params: { page: pageNum - 1, size: pageSize, sort: "id,asc" },
   });
-  return res.data.data; // { content: [...], totalElements: 66 }
+  console.log('getClassPage response:', res);
+  console.log('getClassPage response.data:', res.data);
+  return res.data; // { content: [...], totalElements: 66 }
 };
 
 /**

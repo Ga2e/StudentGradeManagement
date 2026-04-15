@@ -15,7 +15,7 @@ public interface StudentService {
 
   public List<StudentResp> findAll();
 
-  public Page<StudentResp> pageQurey(Pageable pageable);
+  public Page<StudentResp> pageQurey(Pageable pageable, String keyword, String type);
 
   public StudentResp findById(Long id);
 

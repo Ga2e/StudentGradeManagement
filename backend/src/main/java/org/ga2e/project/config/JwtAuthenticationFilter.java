@@ -41,40 +41,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // 开发模式
     try {
 
-      String token = jwtUtil.extraToken(request);
+      String token = null;
+      try {
+        token = jwtUtil.extraToken(request);
+      } catch (Exception e) {
+        // 没有 token 或 token 格式不正确，继续执行过滤器链
+        filterChain.doFilter(request, response);
+        return;
+      }
 
       if (StringUtils.hasText(token)) {
-        String jti = jwtUtil.getClaimFromToken(token, Claims::getId);
+        try {
+          String jti = jwtUtil.getClaimFromToken(token, Claims::getId);
 
-        // 是否在黑名单
-        if (redisTemplate.hasKey("blacklist:" + jti)) {
+          // 是否在黑名单
+          if (redisTemplate.hasKey("blacklist:" + jti)) {
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
+            return;
+          }
+
+          // 是否已经认证成功
+          if (SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            User user = jwtUtil.parseToken(token);
+
+            log.error(user.getAuthorities().toString());
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                user, null, user.getAuthorities());
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            log.info("Jwt authenticated success:{}", user.getCode());
+          }
+        } catch (Exception e) {
+          // token 无效，继续执行过滤器链
           SecurityContextHolder.clearContext();
-          filterChain.doFilter(request, response);
-          return;
-        }
-
-        // 是否已经认证成功
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-
-          User user = jwtUtil.parseToken(token);
-
-          log.error(user.getAuthorities().toString());
-          UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-              user, null, user.getAuthorities());
-          authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-          SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-          log.info("Jwt authenticated success:{}", user.getCode());
         }
       }
-    } catch (ExpiredJwtException e) {
-      // token 错误
-      log.debug("token expired");
+    } catch (Exception e) {
       SecurityContextHolder.clearContext();
-
-    } catch (RuntimeException e) {
-      SecurityContextHolder.clearContext();
-
     }
 
     filterChain.doFilter(request, response);

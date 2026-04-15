@@ -66,23 +66,15 @@ public class ProfessionalController {
 
   @DeleteMapping("/{id}")
   public ApiResult<?> deleteById(@PathVariable Long id) {
-    try {
-      professionalService.deleteById(id);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    professionalService.deleteById(id);
+    return ApiResult.success();
 
   }
 
   @PutMapping("/")
   public ApiResult<?> updateById(@RequestBody @Valid ProfessionalUpdateDTO professionalUpdateDTO) {
-    try {
-      professionalService.update(professionalUpdateDTO);
-      return ApiResult.success();
-    } catch (Exception e) {
-      return ApiResult.error(e.getMessage());
-    }
+    professionalService.update(professionalUpdateDTO);
+    return ApiResult.success();
 
   }
 

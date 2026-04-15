@@ -11,7 +11,11 @@ import Teacher from "./pages/admin/Teacher";
 import Course from "./pages/admin/Course";
 import Student from "./pages/admin/Student";
 import Grade from "./pages/admin/Grade";
+import GradeTest from "./pages/admin/GradeTest";
+import Dashboard from "./pages/admin/Dashboard";
 import MyGrade from "./pages/student/MyGrade";
+import GradeChart from "./pages/student/GradeChart";
+import CourseSelection from "./pages/student/CourseSelection";
 
 
 const RoutesConfig = () => {
@@ -26,8 +30,19 @@ const RoutesConfig = () => {
           <MainPage>
           </MainPage>
         </RoleCheck>}>
+        <Route index element={
+          <RoleCheck required={ADMIN}>
+            <Dashboard></Dashboard>
+          </RoleCheck>
+        }>
+        </Route>
 
-
+        <Route path="dashboard" element={
+          <RoleCheck required={ADMIN}>
+            <Dashboard></Dashboard>
+          </RoleCheck>
+        }>
+        </Route>
 
         <Route path="studentProfile" element={
           <RoleCheck required={STUDENT}>
@@ -88,7 +103,7 @@ const RoutesConfig = () => {
         <Route path="grade" element={
           <RoleCheck required={ADMIN}>
 
-            <Grade></Grade>
+            <GradeTest></GradeTest>
 
           </RoleCheck>
         }>
@@ -98,6 +113,24 @@ const RoutesConfig = () => {
           <RoleCheck required={STUDENT}>
 
             <MyGrade></MyGrade>
+
+          </RoleCheck>
+        }>
+        </Route>
+
+        <Route path="student/gradechart" element={
+          <RoleCheck required={STUDENT}>
+
+            <GradeChart></GradeChart>
+
+          </RoleCheck>
+        }>
+        </Route>
+
+        <Route path="student/course-selection" element={
+          <RoleCheck required={STUDENT}>
+
+            <CourseSelection></CourseSelection>
 
           </RoleCheck>
         }>

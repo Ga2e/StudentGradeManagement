@@ -10,6 +10,7 @@ import org.ga2e.project.module.Institute.dto.InstituteAddDTO;
 import org.ga2e.project.module.Institute.dto.InstituteUpdateDTO;
 import org.ga2e.project.module.Institute.resp.InstituteResp;
 import org.ga2e.project.module.Institute.service.InstituteService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;

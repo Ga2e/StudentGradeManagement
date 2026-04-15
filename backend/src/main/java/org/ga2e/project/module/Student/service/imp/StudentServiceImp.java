@@ -37,19 +37,34 @@ public class StudentServiceImp implements StudentService {
 
   @Override
   public List<StudentResp> findAll() {
-    List<User> students = userRepo.findByRoleId(RoleEnum.STUDENT.getId());
+    List<User> students = userRepo.findByRole_Id(RoleEnum.STUDENT.getId());
     return studentMapper.toListResp(students);
   }
 
   @Override
-  public Page<StudentResp> pageQurey(Pageable pageable) {
-    Page<User> user = userRepo.findByRoleId(pageable, RoleEnum.STUDENT.getId());
+  public Page<StudentResp> pageQurey(Pageable pageable, String keyword, String type) {
+    Page<User> user;
+    if (keyword != null && !keyword.isEmpty()) {
+      if ("code".equals(type)) {
+        // 根据学号进行模糊查询
+        user = userRepo.findByRole_IdAndCodeContaining(pageable, RoleEnum.STUDENT.getId(), keyword);
+      } else if ("name".equals(type)) {
+        // 根据学生姓名进行模糊查询
+        user = userRepo.findByRole_IdAndStudentProfileNameContaining(pageable, RoleEnum.STUDENT.getId(), keyword);
+      } else {
+        // 默认查询所有学生
+        user = userRepo.findByRole_Id(pageable, RoleEnum.STUDENT.getId());
+      }
+    } else {
+      // 没有关键词，查询所有学生
+      user = userRepo.findByRole_Id(pageable, RoleEnum.STUDENT.getId());
+    }
     return studentMapper.toPageReps(user);
   }
 
   @Override
   public StudentResp findById(Long id) {
-    User student = userRepo.findByIdAndRoleId(id, RoleEnum.STUDENT.getId())
+    User student = userRepo.findByIdAndRole_Id(id, RoleEnum.STUDENT.getId())
         .orElseThrow(() -> new RuntimeException("student not exist"));
     return studentMapper.toStudentResp(student);
   }
@@ -57,7 +72,7 @@ public class StudentServiceImp implements StudentService {
   @Override
   @Transactional
   public void deleteById(Long id) {
-    userRepo.deleteByIdAndRoleId(id, RoleEnum.STUDENT.getId());
+    userRepo.deleteByIdAndRole_Id(id, RoleEnum.STUDENT.getId());
   }
 
   @Override
@@ -83,6 +98,7 @@ public class StudentServiceImp implements StudentService {
 
       student.setPassword(password);
     }
+    userRepo.save(student);
 
   }
 

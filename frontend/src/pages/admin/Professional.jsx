@@ -78,18 +78,34 @@ const Professional = () => {
 
   // 刷新数据
   const refresh = async (page = pageNum) => {
+    console.log("开始刷新专业数据，页码:", page);
     setLoading(true);
 
     try {
       const res = await getProfessionalPage({ pageNum: page, pageSize: 10 });
-      setData(res.content || []);
-      setTotal(res.totalElements || 0);
+      console.log("获取专业数据结果:", res);
+      // 检查响应数据结构
+      if (res && typeof res === 'object') {
+        // 尝试不同的数据结构
+        const content = res.content || res.data?.content || [];
+        const totalElements = res.totalElements || res.data?.totalElements || 0;
+        setData(content);
+        setTotal(totalElements);
+        console.log("设置专业数据:", content.length, "条，总数:", totalElements);
+      } else {
+        console.error("响应数据格式错误:", res);
+        setData([]);
+        setTotal(0);
+      }
       setPageNum(page);
       // 刷新后清空选择
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
     } catch (err) {
-      messageApi.error("加载专业数据失败");
+      console.error("加载专业数据失败:", err);
+      messageApi.error(`加载专业数据失败: ${err.message || '未知错误'}`);
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -123,52 +139,90 @@ const Professional = () => {
 
   // 新增
   const handleAdd = async () => {
-    institute.current = await instituteLoad()
-    setAddOpen(true)
+    try {
+      setLoading(true);
+      institute.current = await instituteLoad();
+      if (!institute.current || institute.current.length === 0) {
+        messageApi.warning("请先添加院校数据");
+        return;
+      }
+      setAddOpen(true);
+    } catch (error) {
+      messageApi.error("加载院校数据失败");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleAddOk = async () => {
-    const values = await addForm.validateFields();
+  const handleAddOk = async (values) => {
+    console.log("表单提交数据:", values);
     setConfirmLoading(true);
     try {
-      await addProfessional(values);
-      messageApi.success("新增成功");
-      addForm.resetFields();
-      setAddOpen(false);
-      refresh();
-    } catch {
-      messageApi.error("新增失败");
+      const result = await addProfessional(values);
+      console.log("新增专业结果:", result);
+      if (result) {
+        messageApi.success("新增成功");
+        addForm.resetFields();
+        setAddOpen(false);
+        refresh();
+      } else {
+        messageApi.error("新增失败: 无返回结果");
+      }
+    } catch (error) {
+      console.error("新增专业失败:", error);
+      messageApi.error(`新增失败: ${error.message || '未知错误'}`);
     } finally {
       setConfirmLoading(false);
     }
   };
 
   // 修改
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!selectedRowRef.current) {
       messageApi.warning("请先选择一条专业");
       return;
-    } updateForm.setFieldsValue({
-      name: selectedRowRef.current.name,
-      instituteId: selectedRowRef.current.institute?.id,  // 关键！
-    });
+    }
+    try {
+      setLoading(true);
+      if (!institute.current || institute.current.length === 0) {
+        institute.current = await instituteLoad();
+        if (!institute.current || institute.current.length === 0) {
+          messageApi.warning("请先添加院校数据");
+          return;
+        }
+      }
+      updateForm.setFieldsValue({
+        name: selectedRowRef.current.name,
+        instituteId: selectedRowRef.current.institute?.id,  // 关键！
+      });
 
-    setUpdateOpen(true);
+      setUpdateOpen(true);
+    } catch (error) {
+      messageApi.error("加载院校数据失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdateOk = async () => {
-    const values = await updateForm.validateFields();
+  const handleUpdateOk = async (values) => {
+    console.log("修改专业数据:", values);
     setConfirmLoading(true);
     try {
-      await updateProfessional({
+      const result = await updateProfessional({
         id: selectedRowRef.current.id,
         name: values.name,
         instituteId: values.instituteId
       });
-      messageApi.success("修改成功");
-      setUpdateOpen(false);
-      refresh();
-    } catch {
-      messageApi.error("修改失败");
+      console.log("修改专业结果:", result);
+      if (result) {
+        messageApi.success("修改成功");
+        setUpdateOpen(false);
+        refresh();
+      } else {
+        messageApi.error("修改失败: 无返回结果");
+      }
+    } catch (error) {
+      console.error("修改专业失败:", error);
+      messageApi.error(`修改失败: ${error.message || '未知错误'}`);
     } finally {
       setConfirmLoading(false);
     }
@@ -177,13 +231,16 @@ const Professional = () => {
   // 删除
   const handleDelete = async () => {
     const id = selectedRowKeys[0];
-    try {
-      await deleteProfessional(id);
+    const res = await deleteProfessional(id);
+    console.log(res)
+    if (res.code === 200) {
+
       messageApi.success("删除成功");
-      refresh();
-    } catch {
-      messageApi.error("删除失败");
+    } else {
+      messageApi.error(res.message);
     }
+    refresh();
+
   };
 
   return (

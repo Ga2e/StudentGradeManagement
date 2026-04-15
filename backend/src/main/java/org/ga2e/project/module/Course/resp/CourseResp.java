@@ -18,8 +18,6 @@ public class CourseResp {
 
   private String name;
 
-  private List<Long> teachers;
-
   private BigDecimal credits;
 
   private Integer hours;

@@ -4,7 +4,6 @@ import {
   Flex,
   Form,
   Input,
-  message,
   Space,
   Tabs,
   theme,
@@ -15,7 +14,6 @@ import { login } from "../service/auth";
 import { useNavigate } from "react-router";
 import { usePermissionContext } from "../context/Permission";
 import { useMessage } from "../context/MessageProvider";
-import { verifyCaptcha } from "../service/captcha";
 import Captcha from "../component/Captcha";
 
 const { TabPane } = Tabs;
@@ -34,55 +32,29 @@ const Login = () => {
   const { token } = theme.useToken();
 
   const [loading, setLoading] = useState(false);
-  const [captchaKey, setCaptchaKey] = useState("");
   const [captchaCode, setCaptchaCode] = useState("");
   const [activeRole, setActiveRole] = useState(roles.STUDENT); // 默认选中学生
 
   const onCaptchaReady = (key) => {
-    setCaptchaKey(key);
+    // 验证码key获取成功
   };
 
   const onFinish = async (values) => {
     setLoading(true);
 
-    if (!captchaCode) {
-      messageApi.error("请输入验证码");
-      setLoading(false);
-      return;
-    }
-
     try {
-      const verifyResp = await verifyCaptcha({
-        captchaCode,
-        captchaKey,
+      const response = await login({
+        username: values.username,
+        password: values.password,
+        role: activeRole
       });
-
-      if (verifyResp.code !== 200) {
-        messageApi.error("验证码错误");
-        setLoading(false);
-        return;
-      }
-
-      // 添加 role 字段
-      const loginData = {
-        ...values,
-        role: activeRole,
-      };
-
-      const resp = await login(loginData);
-
-      if (resp.data.code === 200) {
-        const { token, user } = resp.data.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("role", user.role.name);
-        setRole(activeRole);
-        messageApi.success("登录成功");
-        nav("/");
-      } else {
-        messageApi.error(resp.data.message || "登录失败");
-      }
+      const token = response.data.data.token;
+      localStorage.setItem("token", token);
+      setRole(activeRole);
+      messageApi.success("登录成功");
+      nav("/");
     } catch (err) {
-      messageApi.error("登录异常");
+      messageApi.error(err.response?.data?.message || "登录异常");
     } finally {
       setLoading(false);
     }

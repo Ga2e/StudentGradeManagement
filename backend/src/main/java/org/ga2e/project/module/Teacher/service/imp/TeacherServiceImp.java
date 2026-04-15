@@ -37,19 +37,41 @@ public class TeacherServiceImp implements TeacherService {
 
   @Override
   public List<TeacherResp> findAll() {
-    List<User> teachers = userRepo.findByRoleId(RoleEnum.TEACHER.getId());
+    List<User> teachers = userRepo.findByRole_Id(RoleEnum.TEACHER.getId());
     return teacherMapper.toListResp(teachers);
   }
 
   @Override
-  public Page<TeacherResp> pageQurey(Pageable pageable) {
-    Page<User> user = userRepo.findByRoleId(pageable, RoleEnum.TEACHER.getId());
+  public Page<TeacherResp> pageQurey(Pageable pageable, String keyword, String type) {
+    System.out.println("搜索参数: keyword=" + keyword + ", type=" + type);
+    Page<User> user;
+    if (keyword != null && !keyword.isEmpty()) {
+      System.out.println("根据关键词搜索");
+      if ("code".equals(type)) {
+        System.out.println("根据工号搜索: " + keyword);
+        // 根据工号进行模糊查询
+        user = userRepo.findByRole_IdAndCodeContaining(pageable, RoleEnum.TEACHER.getId(), keyword);
+      } else if ("name".equals(type)) {
+        System.out.println("根据姓名搜索: " + keyword);
+        // 根据教师姓名进行模糊查询
+        user = userRepo.findByRole_IdAndTeacherProfileNameContaining(pageable, RoleEnum.TEACHER.getId(), keyword);
+      } else {
+        System.out.println("类型不匹配，查询所有教师");
+        // 默认查询所有教师
+        user = userRepo.findByRole_Id(pageable, RoleEnum.TEACHER.getId());
+      }
+    } else {
+      System.out.println("没有关键词，查询所有教师");
+      // 没有关键词，查询所有教师
+      user = userRepo.findByRole_Id(pageable, RoleEnum.TEACHER.getId());
+    }
+    System.out.println("查询结果数量: " + user.getTotalElements());
     return teacherMapper.toPageReps(user);
   }
 
   @Override
   public TeacherResp findById(Long id) {
-    User teacher = userRepo.findByIdAndRoleId(id, RoleEnum.TEACHER.getId())
+    User teacher = userRepo.findByIdAndRole_Id(id, RoleEnum.TEACHER.getId())
         .orElseThrow(() -> new RuntimeException("teacher not exist"));
     return teacherMapper.toTeacherResp(teacher);
   }
@@ -57,7 +79,7 @@ public class TeacherServiceImp implements TeacherService {
   @Override
   @Transactional
   public void deleteById(Long id) {
-    userRepo.deleteByIdAndRoleId(id, RoleEnum.TEACHER.getId());
+    userRepo.deleteByIdAndRole_Id(id, RoleEnum.TEACHER.getId());
   }
 
   @Override
@@ -83,6 +105,7 @@ public class TeacherServiceImp implements TeacherService {
 
       teacher.setPassword(password);
     }
+    userRepo.save(teacher);
 
   }
 
