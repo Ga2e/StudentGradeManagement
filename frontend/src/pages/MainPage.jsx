@@ -13,6 +13,7 @@ import { useMessage } from "../context/MessageProvider";
 import { HomeOutlined, SettingOutlined, BookOutlined, TeamOutlined, FileTextOutlined, UserOutlined, UsergroupAddOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const adminItems = [
+
   {
     key: 'dashboard',
     label: '个人管理中心',
@@ -28,6 +29,19 @@ const adminItems = [
     key: 'professional',
     label: '专业管理',
     icon: <BookOutlined />,
+<<<<<<< HEAD
+=======
+    children: [
+      {
+        key: 'professional/list',
+        label: '专业列表',
+      },
+      {
+        key: 'professional/plan',
+        label: '培养方案',
+      },
+    ],
+>>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
   },
   {
     key: 'class',

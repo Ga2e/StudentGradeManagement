@@ -2,12 +2,19 @@ package org.ga2e.project.module.Professional.service.imp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.ga2e.project.module.Course.entity.Course;
+import org.ga2e.project.module.Course.repo.CourseRepo;
 import org.ga2e.project.module.Professional.dto.ProfessionalAddDTO;
+import org.ga2e.project.module.Professional.dto.ProfessionalPlanDTO;
 import org.ga2e.project.module.Professional.dto.ProfessionalUpdateDTO;
 import org.ga2e.project.module.Professional.entity.Professional;
+import org.ga2e.project.module.Professional.entity.ProfessionalCourse;
 import org.ga2e.project.module.Professional.mapper.ProfessionalMapper;
+import org.ga2e.project.module.Professional.repo.ProfessionalCourseRepo;
 import org.ga2e.project.module.Professional.repo.ProfessionalRepo;
+import org.ga2e.project.module.Professional.resp.ProfessionalPlanResp;
 import org.ga2e.project.module.Professional.resp.ProfessionalResp;
 import org.ga2e.project.module.Professional.service.ProfessionalService;
 import org.springframework.data.domain.Page;
@@ -22,6 +29,8 @@ public class ProfessionalServiceImp implements ProfessionalService {
 
   private final ProfessionalRepo professionalRepo;
   private final ProfessionalMapper professionalMapper;
+  private final ProfessionalCourseRepo professionalCourseRepo;
+  private final CourseRepo courseRepo;
 
   @Override
   public List<ProfessionalResp> findAll() {
@@ -73,6 +82,94 @@ public class ProfessionalServiceImp implements ProfessionalService {
     Professional entity = professionalMapper.UpdateToEntity(professionalUpdateDTO);
     professionalRepo.save(entity);
 
+  }
+
+  @Override
+  public void addPlan(ProfessionalPlanDTO professionalPlanDTO) {
+    // 先删除该专业的所有培养方案
+    professionalCourseRepo.deleteByProfessionalId(professionalPlanDTO.getProfessionalId());
+    
+    // 添加新的培养方案
+    Professional professional = professionalRepo.findById(professionalPlanDTO.getProfessionalId())
+        .orElseThrow(() -> new RuntimeException("专业不存在"));
+    
+    List<Long> courseIds = professionalPlanDTO.getCourseIds();
+    List<Integer> semesters = professionalPlanDTO.getSemesters();
+    
+    for (int i = 0; i < courseIds.size(); i++) {
+      Long courseId = courseIds.get(i);
+      Integer semester = semesters != null && semesters.size() > i ? semesters.get(i) : 1;
+      
+      Course course = courseRepo.findById(courseId)
+          .orElseThrow(() -> new RuntimeException("课程不存在"));
+      
+      ProfessionalCourse professionalCourse = new ProfessionalCourse();
+      professionalCourse.setProfessional(professional);
+      professionalCourse.setCourse(course);
+      professionalCourse.setSemester(semester);
+      
+      professionalCourseRepo.save(professionalCourse);
+    }
+  }
+
+  @Override
+  public ProfessionalPlanResp getPlanByProfessionalId(Long professionalId) {
+    Professional professional = professionalRepo.findById(professionalId)
+        .orElseThrow(() -> new RuntimeException("专业不存在"));
+    
+    List<ProfessionalCourse> professionalCourses = professionalCourseRepo.findByProfessionalId(professionalId);
+    
+    ProfessionalPlanResp planResp = new ProfessionalPlanResp();
+    planResp.setId(professionalId);
+    planResp.setProfessionalName(professional.getName());
+    
+    List<ProfessionalPlanResp.CourseInfo> courseInfos = professionalCourses.stream()
+        .map(pc -> {
+          ProfessionalPlanResp.CourseInfo courseInfo = new ProfessionalPlanResp.CourseInfo();
+          courseInfo.setId(pc.getCourse().getId());
+          courseInfo.setName(pc.getCourse().getName());
+          courseInfo.setCode(pc.getCourse().getCode());
+          courseInfo.setSemester(pc.getSemester());
+          return courseInfo;
+        })
+        .collect(Collectors.toList());
+    
+    planResp.setCourses(courseInfos);
+    return planResp;
+  }
+
+  @Override
+  public List<ProfessionalPlanResp> getAllPlans() {
+    List<Professional> professionals = professionalRepo.findAll();
+    
+    return professionals.stream()
+        .map(professional -> {
+          ProfessionalPlanResp planResp = new ProfessionalPlanResp();
+          planResp.setId(professional.getId());
+          planResp.setProfessionalName(professional.getName());
+          
+          List<ProfessionalCourse> professionalCourses = professionalCourseRepo.findByProfessionalId(professional.getId());
+          List<ProfessionalPlanResp.CourseInfo> courseInfos = professionalCourses.stream()
+              .map(pc -> {
+                ProfessionalPlanResp.CourseInfo courseInfo = new ProfessionalPlanResp.CourseInfo();
+                courseInfo.setId(pc.getCourse().getId());
+                courseInfo.setName(pc.getCourse().getName());
+                courseInfo.setCode(pc.getCourse().getCode());
+                courseInfo.setSemester(pc.getSemester());
+                return courseInfo;
+              })
+              .collect(Collectors.toList());
+          
+          planResp.setCourses(courseInfos);
+          return planResp;
+        })
+        .filter(plan -> plan.getCourses() != null && !plan.getCourses().isEmpty())
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public void deletePlan(Long professionalId) {
+    professionalCourseRepo.deleteByProfessionalId(professionalId);
   }
 
 }

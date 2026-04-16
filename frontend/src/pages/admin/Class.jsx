@@ -19,12 +19,9 @@ import {
   addClass,
   updateClass,
   deleteClass,
-  addCoursesToClass,
 } from "../../service/class";
 import { getProfessionalPage } from "../../service/professional"; // 复用专业接口
-import { getAllCourse } from "../../service/course"; // 你要有这个接口获取所有课程
 import FormModal from "../../component/FormModal";
-import { getAllTerm } from "../../service/term";
 
 
 const { Option } = Select;
@@ -38,6 +35,7 @@ const columns = [
     dataIndex: ["professional", "name"],
     render: (text) => text || "-",
   },
+<<<<<<< HEAD
   {
     title: "已关联课程",
     dataIndex: "courseIds",
@@ -45,6 +43,9 @@ const columns = [
       <Tag color="blue">{ids?.length || 0} 门</Tag>
     ),
   },
+=======
+
+>>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
   {
     title: "创建时间",
     dataIndex: "createdAt",
@@ -58,7 +59,6 @@ const Class = () => {
 
   const [addForm] = Form.useForm();
   const [updateForm] = Form.useForm();
-  const [courseForm] = Form.useForm(); // 专门给“添加课程”弹窗用
 
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -71,12 +71,9 @@ const Class = () => {
 
   // 下拉数据
   const [professionalList, setProfessionalList] = useState([]);
-  const [courseList, setCourseList] = useState([]);
-  const [termList, setTermList] = useState([]);
   // 弹窗控制
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
-  const [courseOpen, setCourseOpen] = useState(false);
 
   const hasSelected = selectedRowKeys.length > 0;
 
@@ -102,6 +99,7 @@ const Class = () => {
     }
   };
 
+<<<<<<< HEAD
   // 加载所有课程（用于多选）
   const loadCourses = async () => {
     try {
@@ -121,6 +119,9 @@ const Class = () => {
       // 不显示错误信息
     }
   };
+=======
+
+>>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
 
   // 刷新班级列表
   const refresh = async (page = pageNum) => {
@@ -144,8 +145,6 @@ const Class = () => {
   useEffect(() => {
     refresh();
     loadProfessionals();
-    loadCourses();
-    loadTerms()
   }, []);
 
   // 当专业列表加载完成后，设置表单默认值
@@ -223,6 +222,7 @@ const Class = () => {
 
   };
 
+<<<<<<< HEAD
   // 添加课程
   const handleAddCourse = () => {
     if (!selectedRowRef.current) {
@@ -249,6 +249,9 @@ const Class = () => {
       setConfirmLoading(false);
     }
   };
+=======
+
+>>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
 
   return (
     <>
@@ -261,7 +264,6 @@ const Class = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>班级管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增班级</Button>
-              <Button onClick={handleAddCourse} disabled={!hasSelected}>添加课程</Button>
               <Button onClick={handleUpdate} disabled={!hasSelected}>修改</Button>
               <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
             </Space>
@@ -345,56 +347,7 @@ const Class = () => {
 
 
 
-      {/* 给班级添加课程 */}
-      <FormModal
-        title="为班级添加课程"
-        open={courseOpen}
-        onCancel={() => setCourseOpen(false)}
-        onSubmit={handleAddCourseOk}
-        loading={confirmLoading}
-      >
-        <Form form={courseForm} layout="vertical">
-          <div style={{ marginBottom: 16, fontWeight: "bold", color: "#1890ff" }}>
-            当前班级：{selectedRowRef.current?.name || "-"}
-          </div>
 
-          <Form.Item
-            name="courseIds"
-            label="选择课程"
-            rules={[{ required: true, message: "请选择至少一门课程" }]}
-          >
-            <Select
-              mode="multiple"
-              placeholder="请选择课程（可多选）"
-              loading={courseList.length === 0}
-            >
-              {courseList.map(c => {
-                return (
-                  <Option key={c.id} value={c.id}>
-                    {c.name} ({c.code})
-                  </Option>)
-              })}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="termId"
-            label="所属学期"
-            rules={[{ required: true, message: "请选择学期" }]}
-          >
-            <Select
-              placeholder="请选择学期"
-              loading={termList.length === 0}
-            >
-              {termList.map(term => (
-                <Option key={term.id} value={term.id}>
-                  {term.name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </FormModal>
 
 
 

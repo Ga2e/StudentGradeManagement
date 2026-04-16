@@ -11,7 +11,10 @@ import Teacher from "./pages/admin/Teacher";
 import Course from "./pages/admin/Course";
 import Student from "./pages/admin/Student";
 import Grade from "./pages/admin/Grade";
+<<<<<<< HEAD
 import GradeTest from "./pages/admin/GradeTest";
+=======
+>>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
 import Dashboard from "./pages/admin/Dashboard";
 import MyGrade from "./pages/student/MyGrade";
 import GradeChart from "./pages/student/GradeChart";
@@ -67,6 +70,24 @@ const RoutesConfig = () => {
 
           </RoleCheck>
         }>
+          <Route index element={
+            <RoleCheck required={ADMIN}>
+              <Professional></Professional>
+            </RoleCheck>
+          }>
+          </Route>
+          <Route path="list" element={
+            <RoleCheck required={ADMIN}>
+              <Professional></Professional>
+            </RoleCheck>
+          }>
+          </Route>
+          <Route path="plan" element={
+            <RoleCheck required={ADMIN}>
+              <Professional></Professional>
+            </RoleCheck>
+          }>
+          </Route>
         </Route>
         <Route path="class" element={
           <RoleCheck required={ADMIN}>
