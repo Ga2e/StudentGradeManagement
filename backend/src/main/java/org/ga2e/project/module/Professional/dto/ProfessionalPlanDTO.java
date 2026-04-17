@@ -9,4 +9,6 @@ public class ProfessionalPlanDTO {
   private Long professionalId;
   private List<Long> courseIds;
   private List<Integer> semesters;
+  private String version;
+  private String grade;
 }

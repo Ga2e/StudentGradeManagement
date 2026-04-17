@@ -18,10 +18,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.9.4",
-<<<<<<< HEAD
-=======
     "react-router-dom": "^7.14.1",
->>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
     "styled-components": "^6.1.19"
   },
   "devDependencies": {

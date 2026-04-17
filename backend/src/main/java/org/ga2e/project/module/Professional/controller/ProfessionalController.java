@@ -130,4 +130,14 @@ public class ProfessionalController {
     }
   }
 
+  @DeleteMapping("/plan/{professionalId}/{version}/{grade}")
+  public ApiResult<?> deletePlanByVersionAndGrade(@PathVariable Long professionalId, @PathVariable String version, @PathVariable String grade) {
+    try {
+      professionalService.deletePlanByVersionAndGrade(professionalId, version, grade);
+      return ApiResult.success();
+    } catch (Exception e) {
+      return ApiResult.error(e.getMessage());
+    }
+  }
+
 }

@@ -7,7 +7,6 @@ import org.ga2e.project.module.Class.dto.ClassUpdateDTO;
 import org.ga2e.project.module.Class.entity.Class;
 import org.ga2e.project.module.Class.mapper.decorator.ClassDecorator;
 import org.ga2e.project.module.Class.resp.ClassResp;
-import org.ga2e.project.module.Professional.mapper.decorator.ProfessionalDecorator;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
@@ -18,18 +17,18 @@ public interface ClassMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
-  @Mapping(target = "professional", source = "professionalId")
+  @Mapping(target = "gradePlan", source = "gradePlanId")
 
   public Class AddToEntity(ClassAddDTO classAddDTO);
 
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
-  @Mapping(target = "professional", source = "professionalId")
+  @Mapping(target = "gradePlan", source = "gradePlanId")
   public Class UpdateToEntity(ClassUpdateDTO classUpdateDTO);
 
   public List<Class> listAddDTOToEntitys(List<ClassAddDTO> classAddDTOs);
 
-  @Mapping(target = "professional", source = "professional")
+  @Mapping(target = "gradePlan", source = "gradePlan")
   public ClassResp entityToResp(Class clazz);
 
   public List<ClassResp> entitysToResps(List<Class> classs);

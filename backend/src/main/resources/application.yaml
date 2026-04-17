@@ -1,9 +1,5 @@
 server:
-<<<<<<< HEAD
   port: 8080
-=======
-  port: 9090
->>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
 
 spring:
   data:
@@ -25,7 +21,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none # 开发时推荐 update，生产用 validate/none
+      ddl-auto: update # 开发时推荐 update，生产用 validate/none
     show-sql: true
     properties:
       hibernate:

@@ -43,7 +43,6 @@ const Login = () => {
     setLoading(true);
 
     try {
-<<<<<<< HEAD
       const response = await login({
         username: values.username,
         password: values.password,
@@ -52,14 +51,6 @@ const Login = () => {
       const token = response.data.data.token;
       localStorage.setItem("token", token);
       setRole(activeRole);
-=======
-      // 模拟登录成功
-      const token = "mock-token-" + Date.now();
-      const role = activeRole;
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role);
-      setRole(role);
->>>>>>> 5164162423a6ec7c8bc3f3ff504fc9a6385753ee
       messageApi.success("登录成功");
       nav("/");
     } catch (err) {

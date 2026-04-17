@@ -15,13 +15,11 @@ import org.springframework.data.domain.Page;
 public interface InstituteMapper {
 
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "professionals", ignore = true)
 
   public Institute AddToEntity(InstituteAddDTO instituteAddDTO);
 
-  @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "professionals", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
 

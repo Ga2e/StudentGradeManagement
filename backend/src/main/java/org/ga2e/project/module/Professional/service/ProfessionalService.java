@@ -33,5 +33,6 @@ public interface ProfessionalService {
   public ProfessionalPlanResp getPlanByProfessionalId(Long professionalId);
   public List<ProfessionalPlanResp> getAllPlans();
   public void deletePlan(Long professionalId);
+  public void deletePlanByVersionAndGrade(Long professionalId, String version, String grade);
 
 }

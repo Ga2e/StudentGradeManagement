@@ -8,6 +8,8 @@ import lombok.Data;
 public class ProfessionalPlanResp {
   private Long id;
   private String professionalName;
+  private String version;
+  private String grade;
   private List<CourseInfo> courses;
 
   @Data

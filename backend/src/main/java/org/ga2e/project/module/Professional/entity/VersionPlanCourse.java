@@ -14,8 +14,8 @@ import org.ga2e.project.module.Course.entity.Course;
 
 @Data
 @Entity
-@Table(name = "professional_course")
-public class ProfessionalCourse {
+@Table(name = "version_plan_course")
+public class VersionPlanCourse {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,20 +23,14 @@ public class ProfessionalCourse {
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "professional_id")
-  private Professional professional;
+  @JoinColumn(name = "version_plan_id")
+  private VersionPlan versionPlan; // 所属版本培养方案
 
   @ManyToOne
   @JoinColumn(name = "course_id")
-  private Course course;
+  private Course course; // 课程
 
   @Column(name = "semester")
-  private Integer semester;
-
-  @Column(name = "version")
-  private String version;
-
-  @Column(name = "grade")
-  private String grade;
+  private Integer semester; // 学期
 
 }

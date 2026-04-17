@@ -4,19 +4,22 @@ import RoutesConfig from "./RoutesConfig"
 import { PermissionProvider } from "./context/Permission"
 import { ConfigurationProvider } from "./context/Configuration"
 import { MessageProvider } from "./context/MessageProvider"
+import { App as AntdApp } from "antd"
 
 function App() {
   return (
 
     <BrowserRouter>
-      <ConfigurationProvider>
-        <MessageProvider>
-          <PermissionProvider>
+      <AntdApp>
+        <ConfigurationProvider>
+          <MessageProvider>
+            <PermissionProvider>
 
-            <RoutesConfig></RoutesConfig>
-          </PermissionProvider>
-        </MessageProvider>
-      </ConfigurationProvider>
+              <RoutesConfig></RoutesConfig>
+            </PermissionProvider>
+          </MessageProvider>
+        </ConfigurationProvider>
+      </AntdApp>
     </BrowserRouter >
   )
 }

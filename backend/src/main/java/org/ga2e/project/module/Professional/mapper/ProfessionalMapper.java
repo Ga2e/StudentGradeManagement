@@ -18,12 +18,10 @@ public interface ProfessionalMapper {
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
-  @Mapping(target = "classes", ignore = true)
   @Mapping(target = "institute", source = "instituteId")
   public Professional AddToEntity(ProfessionalAddDTO professionalAddDTO);
 
   @Mapping(target = "createdAt", ignore = true)
-  @Mapping(target = "classes", ignore = true)
   @Mapping(target = "institute", source = "instituteId")
   @Mapping(target = "updatedAt", ignore = true)
 
