@@ -229,7 +229,7 @@ const Plan = () => {
       const res = await getAllProfessional();
       let professionals = res?.data || [];
       if (instituteId) {
-        professionals = professionals.filter(p => p.instituteId === instituteId);
+        professionals = professionals.filter(p => p.institute?.id === instituteId);
       }
       setProfessionalList(professionals);
     } catch {
@@ -303,8 +303,16 @@ const Plan = () => {
   // 编辑版本培养方案
   const handleEditVersionPlan = (record) => {
     setCurrentVersionPlan(record);
+    // 查找对应的专业信息，获取院校ID
+    const professional = professionalList.find(p => p.id === record.professionalId);
+    const instituteId = professional?.instituteId;
+    
+    // 设置选中的院校ID
+    setSelectedInstituteId(instituteId);
+    
     // 填充表单数据
     versionPlanForm.setFieldsValue({
+      instituteId: instituteId,
       versionNumber: record.versionNumber,
       description: record.description,
       professionalId: record.professionalId,

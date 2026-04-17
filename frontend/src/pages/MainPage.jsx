@@ -15,6 +15,12 @@ import { HomeOutlined, SettingOutlined, BookOutlined, TeamOutlined, FileTextOutl
 const adminItems = [
 
   {
+    key: 'dashboard',
+    label: '个人管理中心',
+    icon: <HomeOutlined />,
+    style: { backgroundColor: '#FFF9C4' },
+  },
+  {
     key: 'institute',
     label: '学院管理',
     icon: <SettingOutlined />,

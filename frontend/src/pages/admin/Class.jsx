@@ -30,8 +30,24 @@ const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
   { title: "班级名称", dataIndex: "name" },
   { title: "开设年份", dataIndex: "year" },
+  {
+    title: "所属专业",
+    dataIndex: ["professional", "name"],
+    render: (text) => text || "-",
+  },
+  {
+    title: "已关联课程",
+    dataIndex: "courseIds",
+    render: (ids) => (
+      <Tag color="blue">{ids?.length || 0} 门</Tag>
+    ),
+  },
   { title: "执行培养方案", dataIndex: ["gradePlan", "versionPlanNumber"], render: (text) => text || "-" },
-  { title: "创建时间", dataIndex: "createdAt", render: (time) => (time ? new Date(time).toLocaleString() : "-") },
+  {
+    title: "创建时间",
+    dataIndex: "createdAt",
+    render: (time) => (time ? new Date(time).toLocaleString() : "-"),
+  },
 ];
 
 const Class = () => {
@@ -79,8 +95,6 @@ const Class = () => {
       // 不显示错误信息
     }
   };
-
-
 
   // 刷新班级列表
   const refresh = async (page = pageNum) => {
@@ -167,20 +181,19 @@ const Class = () => {
   const handleDelete = async () => {
     const id = selectedRowKeys[0];
 
-    const res = await deleteClass(id);
-    if (res.code === 200) {
-      message.success("删除成功");
-
-    } else {
-      message.error(res.message);
-
+    try {
+      const res = await deleteClass(id);
+      if (res && (res.code === 200 || res.data)) {
+        message.success("删除成功");
+      } else {
+        message.error(res?.message || "删除失败");
+      }
+      refresh();
+    } catch (error) {
+      console.error("删除班级失败:", error);
+      message.error(`删除失败: ${error.message || '未知错误'}`);
     }
-    refresh();
-
-
   };
-
-
 
   return (
     <>

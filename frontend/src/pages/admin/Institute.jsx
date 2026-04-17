@@ -1,10 +1,12 @@
 import {
   Button,
+  Descriptions,
   Empty,
   Flex,
   Form,
   Input,
   message,
+  Modal,
   Pagination,
   Space,
   Table,
@@ -18,13 +20,6 @@ import {
   updateInstitute,
 } from "../../service/institute";
 import FormModal from "../../component/FormModal";
-
-const columns = [
-  {
-    title: "Name",
-    dataIndex: "name",
-  },
-];
 
 const Institute = () => {
   // ========== 选中行（只读）==========
@@ -67,6 +62,8 @@ const Institute = () => {
       const res = await getPages({ pageNum: pageNum - 1, pageSize });
       setData(res.content);
       setTotal(res.totalElements);
+    } catch (error) {
+      messageApi.error("获取数据失败：" + (error.message || "未知错误"));
     } finally {
       setLoading(false);
     }
@@ -78,63 +75,94 @@ const Institute = () => {
     selectedRowRef.current = rows[0] || null;
   };
 
-  // ========== 删除 ==========
-  const deleteAction = async () => {
-    await deleteInstituteById(selectRowKeys[0])
-      .then(resp => {
-        console.log(resp)
-        if (resp.code === 200) {
-
-          messageApi.success("删除成功");
-        } else {
-
-          messageApi.error(resp.message);
-        }
-      })
-    refresh()
-  };
-
   // ========== 新增 ==========
   const addAction = () => setAddModelOpen(true);
   const addOkHandler = async () => {
     const values = await addForm.validateFields();
-    setConfirmLoading(true);
     try {
-      await addInstitute(values);
-      messageApi.success("添加成功");
-      addForm.resetFields();
-      setAddModelOpen(false);
-      refresh();
-    } finally {
-      setConfirmLoading(false);
+      const resp = await addInstitute(values);
+      if (resp.code === 200) {
+        messageApi.success("添加成功");
+        addForm.resetFields();
+        setAddModelOpen(false);
+        refresh();
+      } else {
+        messageApi.error(resp.message);
+      }
+    } catch (error) {
+      messageApi.error("添加失败：" + (error.message || "未知错误"));
+    }
+  };
+
+  // ========== 详情 ==========
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailData, setDetailData] = useState({});
+
+  const detailAction = (record) => {
+    selectedRowRef.current = record;
+    setDetailData(record);
+    setDetailModalOpen(true);
+  };
+
+  // ========== 删除确认 ==========
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteRecord, setDeleteRecord] = useState(null);
+
+  const deleteAction = (record) => {
+    selectedRowRef.current = record;
+    setDeleteRecord(record);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteRecord) return;
+    try {
+      const resp = await deleteInstituteById(deleteRecord.id);
+      if (resp.code === 200) {
+        messageApi.success("删除成功");
+      } else {
+        messageApi.error(resp.message);
+      }
+      await refresh();
+      setDeleteModalOpen(false);
+    } catch (error) {
+      messageApi.error("删除失败：" + (error.message || "未知错误"));
     }
   };
 
   // ========== 修改 ==========
-  const updateAction = () => {
-    if (!selectedRowRef.current) {
-      messageApi.warning("请先选择一条数据");
-      return;
+  const updateAction = (record) => {
+    selectedRowRef.current = record;
+    const { name, description, createdAt } = record;
+    let formattedCreatedAt = null;
+    if (createdAt) {
+      const date = new Date(createdAt);
+      formattedCreatedAt = date.toISOString().slice(0, 16);
     }
     updateForm.setFieldsValue({
-      name: selectedRowRef.current.name,
+      name,
+      description,
+      createdAt: formattedCreatedAt,
     });
     setUpdateModelOpen(true);
   };
 
   const updateOkHandler = async () => {
     const values = await updateForm.validateFields();
-    setConfirmLoading(true);
     try {
-      await updateInstitute({
+      const resp = await updateInstitute({
         id: selectedRowRef.current.id,
         ...values,
       });
-      messageApi.success("修改成功");
-      setUpdateModelOpen(false);
-      refresh();
-    } finally {
-      setConfirmLoading(false);
+      if (resp.code === 200) {
+        messageApi.success("修改成功");
+        setUpdateModelOpen(false);
+        refresh();
+      } else {
+        messageApi.error(resp.message);
+      }
+    } catch (error) {
+      messageApi.error("修改失败：" + (error.message || "未知错误"));
     }
   };
 
@@ -143,13 +171,36 @@ const Institute = () => {
     refresh();
   }, [pageNum]);
 
+  // ========== 表格列配置 ==========
+  const columns = [
+    {
+      title: "学院名称",
+      dataIndex: "name",
+    },
+    {
+      title: "操作",
+      key: "action",
+      width: 200,
+      align: 'center',
+      render: function(_, record) {
+        return (
+          <Space size="middle">
+            <Button type="link" onClick={() => detailAction(record)}>详情</Button>
+            <Button type="link" onClick={() => updateAction(record)}>修改</Button>
+            <Button type="link" danger onClick={() => deleteAction(record)}>删除</Button>
+          </Space>
+        );
+      },
+    },
+  ];
+
   return (
     <>
       {contextHolder}
 
       {/* 新增弹窗 */}
       <FormModal
-        title="Add Institute"
+        title="新增学院"
         open={addModelOpen}
         onCancel={() => {
           addForm.resetFields();
@@ -161,17 +212,34 @@ const Institute = () => {
         <Form form={addForm} layout="vertical">
           <Form.Item
             name="name"
-            label="Institute Name"
-            rules={[{ required: true, message: "请输入机构名称" }]}
+            label="学院名称"
+            rules={[{ required: true, message: "请输入学院名称" }]}
           >
-            <Input placeholder="请输入" />
+            <Input placeholder="请输入学院名称" />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="学院介绍"
+          >
+            <Input.TextArea 
+              placeholder="请输入学院介绍" 
+              rows={4} 
+              maxLength={150} 
+              showCount 
+            />
+          </Form.Item>
+          <Form.Item
+            name="createdAt"
+            label="创建时间"
+          >
+            <Input type="datetime-local" placeholder="请选择创建时间" />
           </Form.Item>
         </Form>
       </FormModal>
 
       {/* 修改弹窗 */}
       <FormModal
-        title="Update Institute"
+        title="修改学院"
         open={updateModelOpen}
         onCancel={() => setUpdateModelOpen(false)}
         onSubmit={updateOkHandler}
@@ -180,48 +248,84 @@ const Institute = () => {
         <Form form={updateForm} layout="vertical">
           <Form.Item
             name="name"
-            label="Institute Name"
-            rules={[{ required: true, message: "请输入机构名称" }]}
+            label="学院名称"
+            rules={[{ required: true, message: "请输入学院名称" }]}
           >
-            <Input placeholder="请输入" />
+            <Input placeholder="请输入学院名称" />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="学院介绍"
+          >
+            <Input.TextArea 
+              placeholder="请输入学院介绍" 
+              rows={4} 
+              maxLength={150} 
+              showCount 
+            />
+          </Form.Item>
+          <Form.Item
+            name="createdAt"
+            label="创建时间"
+          >
+            <Input type="datetime-local" placeholder="请选择创建时间" />
           </Form.Item>
         </Form>
       </FormModal>
+
+      {/* 详情弹窗 */}
+      <Modal
+        title="学院详情"
+        open={detailModalOpen}
+        onCancel={() => setDetailModalOpen(false)}
+        footer={[
+          <Button key="ok" type="primary" onClick={() => setDetailModalOpen(false)}>
+            确定
+          </Button>,
+        ]}
+        width={600}
+      >
+        <Descriptions bordered column={1}>
+          <Descriptions.Item label="学院名称">{detailData.name || '-'}</Descriptions.Item>
+          <Descriptions.Item label="学院简介">{detailData.description || '-'}</Descriptions.Item>
+          <Descriptions.Item label="创建时间">
+            {detailData.createdAt ? new Date(detailData.createdAt).toLocaleString() : '-'}
+          </Descriptions.Item>
+        </Descriptions>
+      </Modal>
+
+      {/* 删除确认弹窗 */}
+      <Modal
+        title="确定要删除吗？"
+        open={deleteModalOpen}
+        onCancel={() => setDeleteModalOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setDeleteModalOpen(false)}>
+            取消
+          </Button>,
+          <Button key="ok" type="primary" danger onClick={handleDelete}>
+            确定删除
+          </Button>,
+        ]}
+        width={400}
+      >
+        <p>确定要删除「{deleteRecord?.name || ''}」学院吗？</p>
+      </Modal>
 
       {/* 页面主体 */}
       <Flex vertical style={{ width: "100%", height: "100vh" }}>
         <Flex justify="space-between" align="center" style={{ height: 64, flexShrink: 0, padding: "0 24px" }}>
           <Typography.Title level={4} style={{ margin: 0 }}>
-            Institute
+            学院管理
           </Typography.Title>
           <Space>
             <Button type="primary" onClick={addAction}>
-              Add
-            </Button>
-            <Button
-              type="primary"
-              danger
-              onClick={deleteAction}
-              disabled={!hasSelected}
-            >
-              Delete
-            </Button>
-            <Button
-              type="primary"
-              onClick={updateAction}
-              disabled={!hasSelected}
-            >
-              Update
+              新增学院
             </Button>
           </Space>
         </Flex>
 
         <Table
-          rowSelection={{
-            type: "radio",
-            selectedRowKeys: selectRowKeys,
-            onChange: handleSelectionChange,
-          }}
           columns={columns}
           dataSource={formattedData}
           loading={loading}
@@ -235,7 +339,32 @@ const Institute = () => {
             ),
           }}
           style={{ flex: 1, }}
-          scroll={{ y: "100%" }}
+          components={{
+            header: {
+              cell: ({ children, column, ...rest }) => {
+                if (column && column.key === 'action') {
+                  return (
+                    <th {...rest} style={{ ...rest.style, borderLeft: '1px solid #d9d9d9' }}>
+                      {children}
+                    </th>
+                  );
+                }
+                return <th {...rest}>{children}</th>;
+              },
+            },
+            body: {
+              cell: ({ children, column, ...rest }) => {
+                if (column && column.key === 'action') {
+                  return (
+                    <td {...rest} style={{ ...rest.style, borderLeft: '1px solid #d9d9d9' }}>
+                      {children}
+                    </td>
+                  );
+                }
+                return <td {...rest}>{children}</td>;
+              },
+            },
+          }}
         />
 
         <Pagination

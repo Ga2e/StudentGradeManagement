@@ -25,6 +25,7 @@ import {
 import { getAllStudent } from "../../service/student"; // 用于录入时选学生
 import { getAllCourse } from "../../service/course"; // 用于录入时选课程
 import FormModal from "../../component/FormModal";
+import { useMessage } from "../../context/MessageProvider";
 
 const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
@@ -49,13 +50,14 @@ const columns = [
 ];
 
 const Grade = () => {
+  console.log("Grade component rendered");
   const selectedRowRef = useRef(null);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [addForm] = Form.useForm();
   const [updateForm] = Form.useForm();
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+  const { messageApi } = useMessage();
   const [pageNum, setPageNum] = useState(1);
   const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
@@ -73,41 +75,64 @@ const Grade = () => {
 
   // 加载下拉数据
   const loadStudents = async () => {
+    console.log("开始加载学生数据");
     try {
       const res = await getAllStudent();
+      console.log("学生数据加载结果:", res);
       setStudentList(res || []);
-    } catch {
+    } catch (error) {
+      console.error("加载学生数据失败:", error);
       setStudentList([]);
     }
   };
 
   const loadCourses = async () => {
+    console.log("开始加载课程数据");
     try {
       const res = await getAllCourse();
+      console.log("课程数据加载结果:", res);
       setCourseList(res || []);
-    } catch {
+    } catch (error) {
+      console.error("加载课程数据失败:", error);
       setCourseList([]);
     }
   };
 
   // 刷新成绩列表（管理员分页）
   const refresh = async (page = pageNum) => {
+    console.log("开始刷新成绩数据，页码:", page);
     setLoading(true);
     try {
       const res = await getGradePage({ pageNum: page, pageSize });
-      setData(res.content || []);
-      setTotal(res.totalElements || 0);
+      console.log("成绩数据加载结果:", res);
+      // 检查响应数据结构
+      if (res && typeof res === 'object') {
+        // 尝试不同的数据结构
+        const content = res.content || res.data?.content || [];
+        const totalElements = res.totalElements || res.data?.totalElements || 0;
+        setData(content);
+        setTotal(totalElements);
+        console.log("设置成绩数据:", content.length, "条，总数:", totalElements);
+      } else {
+        console.error("响应数据格式错误:", res);
+        setData([]);
+        setTotal(0);
+      }
       setPageNum(page);
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
-    } catch {
-      messageApi.error("加载成绩失败");
+    } catch (error) {
+      console.error("加载成绩数据失败:", error);
+      messageApi.error(`加载成绩失败: ${error.message || '未知错误'}`);
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("Grade component mounted, calling refresh and loading data");
     refresh();
     loadStudents();
     loadCourses();
@@ -175,7 +200,6 @@ const Grade = () => {
 
   return (
     <>
-      {contextHolder}
       <Flex vertical style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         {/* 顶部操作栏 */}
         <div style={{ padding: "16px 24px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>

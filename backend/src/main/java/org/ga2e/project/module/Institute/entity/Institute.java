@@ -33,6 +33,9 @@ public class Institute {
   @Column(name = "name", nullable = false)
   private String name;
 
+  @Column(name = "description")
+  private String description;
+
   @OneToMany(mappedBy = "institute", fetch = FetchType.LAZY)
   private List<Professional> professionals;
 

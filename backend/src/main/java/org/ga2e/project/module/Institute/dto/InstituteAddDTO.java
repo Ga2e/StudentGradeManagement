@@ -9,4 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InstituteAddDTO {
   private String name;
+  private String description;
+  private String createdAt;
 }

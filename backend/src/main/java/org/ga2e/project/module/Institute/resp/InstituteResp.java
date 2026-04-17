@@ -14,6 +14,7 @@ public class InstituteResp {
   private Long id;
 
   private String name;
+  private String description;
 
   private LocalDateTime createdAt;
 

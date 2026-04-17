@@ -28,16 +28,30 @@ const columns = [
     width: 100,
   },
   {
-    title: "professionalName",
+    title: "专业名称",
     dataIndex: "name",
   },
   {
-    title: "InstituteName",
+    title: "所属院校",
     render: (record) => (
       <span>
         {record.institute.name}
       </span>
     )
+  },
+  {
+    title: "操作",
+    key: "action",
+    width: 200,
+    align: 'center',
+    render: function(_, record) {
+      return (
+        <Space size="middle">
+          <Button type="link" onClick={() => handleUpdate(record)}>修改</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>删除</Button>
+        </Space>
+      );
+    },
   }
 ];
 
@@ -81,21 +95,34 @@ const Professional = () => {
 
   // 刷新专业数据
   const refresh = async (page = pageNum) => {
+    console.log("开始刷新专业数据，页码:", page);
     setLoading(true);
 
     try {
       const res = await getProfessionalPage({ pageNum: page, pageSize: 10 });
-      console.log('Professional data response:', res);
-      // 正确处理后端返回的数据结构
-      setData(res.data?.content || []);
-      setTotal(res.data?.totalElements || 0);
+      console.log("获取专业数据结果:", res);
+      // 检查响应数据结构
+      if (res && typeof res === 'object') {
+        // 尝试不同的数据结构
+        const content = res.content || res.data?.content || [];
+        const totalElements = res.totalElements || res.data?.totalElements || 0;
+        setData(content);
+        setTotal(totalElements);
+        console.log("设置专业数据:", content.length, "条，总数:", totalElements);
+      } else {
+        console.error("响应数据格式错误:", res);
+        setData([]);
+        setTotal(0);
+      }
       setPageNum(page);
       // 刷新后清空选择
       setSelectedRowKeys([]);
       selectedRowRef.current = null;
     } catch (err) {
-      console.log('加载专业数据失败:', err);
-      messageApi.error("加载专业数据失败");
+      console.error("加载专业数据失败:", err);
+      messageApi.error(`加载专业数据失败: ${err.message || '未知错误'}`);
+      setData([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -129,46 +156,74 @@ const Professional = () => {
 
   // 新增
   const handleAdd = async () => {
-    institute.current = await instituteLoad()
-    setAddOpen(true)
+    try {
+      setLoading(true);
+      institute.current = await instituteLoad();
+      if (!institute.current || institute.current.length === 0) {
+        messageApi.warning("请先添加院校数据");
+        return;
+      }
+      setAddOpen(true);
+    } catch (error) {
+      messageApi.error("加载院校数据失败");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleAddOk = async () => {
-    const values = await addForm.validateFields();
+  const handleAddOk = async (values) => {
+    console.log("表单提交数据:", values);
     setConfirmLoading(true);
     try {
       const res = await addProfessional(values);
+      console.log("新增专业结果:", res);
       // 检查后端返回的数据结构
-      if (res.code === 200) {
+      if (res && (res.code === 200 || res.data)) {
         messageApi.success("新增成功");
         addForm.resetFields();
         setAddOpen(false);
         refresh();
       } else {
-        messageApi.error(res.message || "新增失败");
+        messageApi.error(res?.message || "新增失败: 无返回结果");
       }
-    } catch (err) {
-      console.log('新增专业失败:', err);
-      messageApi.error("新增失败");
+    } catch (error) {
+      console.error("新增专业失败:", error);
+      messageApi.error(`新增失败: ${error.message || '未知错误'}`);
     } finally {
       setConfirmLoading(false);
     }
   };
 
   // 修改
-  const handleUpdate = () => {
-    if (!selectedRowRef.current) {
+  const handleUpdate = async (record) => {
+    if (!record) {
       messageApi.warning("请先选择一条专业");
       return;
-    } updateForm.setFieldsValue({
-      name: selectedRowRef.current.name,
-      instituteId: selectedRowRef.current.institute?.id,  // 关键！
-    });
+    }
+    try {
+      setLoading(true);
+      if (!institute.current || institute.current.length === 0) {
+        institute.current = await instituteLoad();
+        if (!institute.current || institute.current.length === 0) {
+          messageApi.warning("请先添加院校数据");
+          return;
+        }
+      }
+      selectedRowRef.current = record;
+      updateForm.setFieldsValue({
+        name: record.name,
+        instituteId: record.institute?.id,  // 关键！
+      });
 
-    setUpdateOpen(true);
+      setUpdateOpen(true);
+    } catch (error) {
+      messageApi.error("加载院校数据失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleUpdateOk = async () => {
-    const values = await updateForm.validateFields();
+  const handleUpdateOk = async (values) => {
+    console.log("修改专业数据:", values);
     setConfirmLoading(true);
     try {
       const res = await updateProfessional({
@@ -176,39 +231,42 @@ const Professional = () => {
         name: values.name,
         instituteId: values.instituteId
       });
+      console.log("修改专业结果:", res);
       // 检查后端返回的数据结构
-      if (res.code === 200) {
+      if (res && (res.code === 200 || res.data)) {
         messageApi.success("修改成功");
         setUpdateOpen(false);
         refresh();
       } else {
-        messageApi.error(res.message || "修改失败");
+        messageApi.error(res?.message || "修改失败: 无返回结果");
       }
-    } catch (err) {
-      console.log('修改专业失败:', err);
-      messageApi.error("修改失败");
+    } catch (error) {
+      console.error("修改专业失败:", error);
+      messageApi.error(`修改失败: ${error.message || '未知错误'}`);
     } finally {
       setConfirmLoading(false);
     }
   };
 
   // 删除
-  const handleDelete = async () => {
-    const id = selectedRowKeys[0];
+  const handleDelete = async (id) => {
+    if (!id) {
+      messageApi.warning("请先选择一条专业");
+      return;
+    }
     try {
       const res = await deleteProfessional(id);
       console.log(res)
-      if (res.code === 200) {
+      if (res && (res.code === 200 || res.data)) {
         messageApi.success("删除成功");
       } else {
-        messageApi.error(res.message || "删除失败");
+        messageApi.error(res?.message || "删除失败");
       }
       refresh();
-    } catch (err) {
-      console.log('删除专业失败:', err);
-      messageApi.error("删除失败");
+    } catch (error) {
+      console.error("删除专业失败:", error);
+      messageApi.error(`删除失败: ${error.message || '未知错误'}`);
     }
-
   };
 
   return (
@@ -233,28 +291,16 @@ const Professional = () => {
             <Button type="primary" onClick={handleAdd}>
               新增专业
             </Button>
-            <Button danger onClick={handleDelete} disabled={!hasSelected}>
-              删除
-            </Button>
-            <Button onClick={handleUpdate} disabled={!hasSelected}>
-              修改
-            </Button>
           </Space>
         </div>
 
         {/* 表格区域 */}
         <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
           <Table
-            rowSelection={{
-              type: "radio",
-              selectedRowKeys,
-              onChange: handleSelectChange,
-            }}
             columns={columns}
             dataSource={tableData}
             loading={loading}
             pagination={false}
-            scroll={{ y: "100%" }}
             style={{ height: "100%" }}
             locale={{ emptyText: <Empty description="暂无数据" /> }}
           />
@@ -301,8 +347,8 @@ const Professional = () => {
             <Input placeholder="如：计算机科学与技术" />
           </Form.Item>
 
-          <Form.Item name="instituteId" label="withInstitute" rules={[{ required: true, message: "请选择所属院校" }]}>
-            <Select style={{ width: 120 }} options={institute.current.map((value, index) => ({ value: value.id, label: value.name }))}>
+          <Form.Item name="instituteId" label="所属院校" rules={[{ required: true, message: "请选择所属院校" }]}>
+            <Select style={{ width: 120 }} options={Array.isArray(institute.current) ? institute.current.map((value, index) => ({ value: value.id, label: value.name })) : []}>
 
             </Select>
 
@@ -327,8 +373,8 @@ const Professional = () => {
           >
             <Input placeholder="请输入" />
           </Form.Item>
-          <Form.Item name="instituteId" label="withInstitute" rules={[{ required: true, message: "请选择所属院校" }]}>
-            <Select style={{ width: 120 }} options={institute.current.map((value, index) => ({ value: value.id, label: value.name }))}>
+          <Form.Item name="instituteId" label="所属院校" rules={[{ required: true, message: "请选择所属院校" }]}>
+            <Select style={{ width: 120 }} options={Array.isArray(institute.current) ? institute.current.map((value, index) => ({ value: value.id, label: value.name })) : []}>
 
             </Select>
           </Form.Item>

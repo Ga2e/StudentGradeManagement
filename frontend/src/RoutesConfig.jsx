@@ -12,6 +12,7 @@ import Teacher from "./pages/admin/Teacher";
 import Course from "./pages/admin/Course";
 import Student from "./pages/admin/Student";
 import Grade from "./pages/admin/Grade";
+import GradeTest from "./pages/admin/GradeTest";
 import Dashboard from "./pages/admin/Dashboard";
 import MyGrade from "./pages/student/MyGrade";
 import GradeChart from "./pages/student/GradeChart";
@@ -121,7 +122,7 @@ const RoutesConfig = () => {
         <Route path="grade" element={
           <RoleCheck required={ADMIN}>
 
-            <Grade></Grade>
+            <GradeTest></GradeTest>
 
           </RoleCheck>
         }>
