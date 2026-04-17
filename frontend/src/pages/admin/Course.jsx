@@ -97,7 +97,7 @@ const Course = () => {
 
   const handleSelectChange = (selectedRowKeys, selectedRows) => {
     setSelectedRowKeys(selectedRowKeys);
-    selectedRowRef.current = selectedRows[0] || null;
+    selectedRowRef.current = selectedRows || [];
   };
 
   // 新增
@@ -119,19 +119,30 @@ const Course = () => {
   // 删除
   const handleDelete = async () => {
     console.log('删除按钮被点击', selectedRowKeys);
-    const id = selectedRowKeys[0];
-    if (!id) {
-      message.warning("请先选择一门课程");
+    if (selectedRowKeys.length === 0) {
+      message.warning("请先选择要删除的课程");
       return;
     }
     try {
-      console.log('删除课程 ID:', id);
-      console.log('删除课程 ID 类型:', typeof id);
-      await deleteCourse(id);
-      message.success("删除成功");
+      // 批量删除，逐个删除每个选中的课程
+      const deletePromises = selectedRowKeys.map(async (key) => {
+        console.log('删除课程 ID:', key);
+        console.log('删除课程 ID 类型:', typeof key);
+        const res = await deleteCourse(key);
+        return res;
+      });
+      
+      const results = await Promise.all(deletePromises);
+      
+      // 检查删除结果
+      const successCount = results.filter(res => res && (res.code === 200 || res.data)).length;
+      if (successCount > 0) {
+        message.success(`成功删除 ${successCount} 门课程`);
+      }
+      
       refresh();
     } catch (error) {
-      console.error('删除失败', error);
+      console.error('批量删除课程失败:', error);
       message.error("删除失败");
     }
   };
@@ -146,7 +157,7 @@ const Course = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>课程管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增课程</Button>
-              <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
+              <Button danger onClick={handleDelete} disabled={!hasSelected}>批量删除</Button>
             </Space>
           </div>
         </div>
@@ -154,7 +165,7 @@ const Course = () => {
         {/* 表格 */}
         <div style={{ flex: 1, overflow: "auto", padding: "16px 24px" }}>
           <Table
-            rowSelection={{ type: "radio", selectedRowKeys, onChange: handleSelectChange }}
+            rowSelection={{ type: "checkbox", selectedRowKeys, onChange: handleSelectChange }}
             columns={columns}
             dataSource={tableData}
             loading={loading}

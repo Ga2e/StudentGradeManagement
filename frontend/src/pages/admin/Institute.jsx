@@ -72,7 +72,7 @@ const Institute = () => {
   // ========== 表格选择回调 ==========
   const handleSelectionChange = (keys, rows) => {
     setSelectRowKeys(keys);
-    selectedRowRef.current = rows[0] || null;
+    selectedRowRef.current = rows || [];
   };
 
   // ========== 新增 ==========
@@ -127,6 +127,33 @@ const Institute = () => {
       setDeleteModalOpen(false);
     } catch (error) {
       messageApi.error("删除失败：" + (error.message || "未知错误"));
+    }
+  };
+
+  // ========== 批量删除 ==========
+  const handleBatchDelete = async () => {
+    if (selectRowKeys.length === 0) {
+      return messageApi.warning("请先选择要删除的学院");
+    }
+    
+    try {
+      // 批量删除，逐个删除每个选中的学院
+      const deletePromises = selectRowKeys.map(async (key) => {
+        const resp = await deleteInstituteById(key);
+        return resp;
+      });
+      
+      const results = await Promise.all(deletePromises);
+      
+      // 检查删除结果
+      const successCount = results.filter(resp => resp && resp.code === 200).length;
+      if (successCount > 0) {
+        messageApi.success(`成功删除 ${successCount} 个学院`);
+      }
+      
+      await refresh();
+    } catch (error) {
+      messageApi.error("批量删除失败：" + (error.message || "未知错误"));
     }
   };
 
@@ -322,10 +349,18 @@ const Institute = () => {
             <Button type="primary" onClick={addAction}>
               新增学院
             </Button>
+            <Button danger onClick={() => handleBatchDelete()} disabled={selectRowKeys.length === 0}>
+              批量删除
+            </Button>
           </Space>
         </Flex>
 
         <Table
+          rowSelection={{
+            type: "checkbox",
+            selectedRowKeys: selectRowKeys,
+            onChange: handleSelectionChange,
+          }}
           columns={columns}
           dataSource={formattedData}
           loading={loading}

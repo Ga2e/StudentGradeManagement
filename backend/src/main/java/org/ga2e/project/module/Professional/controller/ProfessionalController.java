@@ -73,6 +73,15 @@ public class ProfessionalController {
 
   }
 
+  @DeleteMapping("/batch")
+  public ApiResult<?> deleteBatch(@RequestBody List<Long> ids) {
+    for (Long id : ids) {
+      professionalService.deleteById(id);
+    }
+    return ApiResult.success();
+
+  }
+
   @PutMapping("/")
   public ApiResult<?> updateById(@RequestBody @Valid ProfessionalUpdateDTO professionalUpdateDTO) {
     professionalService.update(professionalUpdateDTO);
