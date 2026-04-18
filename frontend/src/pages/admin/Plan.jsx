@@ -763,6 +763,19 @@ const Plan = () => {
               placeholder="请选择版本培养方案"
               loading={versionPlanData.length === 0}
               style={{ width: "100%" }}
+              onChange={(value) => {
+                // 找到选中的版本培养方案
+                const selectedVersionPlan = versionPlanData.find(vp => vp.id === value);
+                if (selectedVersionPlan && selectedVersionPlan.courses) {
+                  // 提取课程ID列表
+                  const courseIds = selectedVersionPlan.courses.map(course => course.courseId);
+                  // 设置课程选择字段的值
+                  gradePlanForm.setFieldsValue({ courseIds });
+                } else {
+                  // 如果没有关联的课程，清空课程选择字段
+                  gradePlanForm.setFieldsValue({ courseIds: [] });
+                }
+              }}
             >
               {versionPlanData.map(vp => (
                 <Select.Option key={vp.id} value={vp.id}>
@@ -774,8 +787,8 @@ const Plan = () => {
 
           <Form.Item
             name="grade"
-            label="年级"
-            rules={[{ required: true, message: "请输入年级" }]}
+            label="名称"
+            rules={[{ required: true, message: "请输入名称" }]}
           >
             <Input placeholder="如：2024级" />
           </Form.Item>
@@ -862,6 +875,19 @@ const Plan = () => {
               placeholder="请选择版本培养方案"
               loading={versionPlanData.length === 0}
               style={{ width: "100%" }}
+              onChange={(value) => {
+                // 找到选中的版本培养方案
+                const selectedVersionPlan = versionPlanData.find(vp => vp.id === value);
+                if (selectedVersionPlan && selectedVersionPlan.courses) {
+                  // 提取课程ID列表
+                  const courseIds = selectedVersionPlan.courses.map(course => course.courseId);
+                  // 设置课程选择字段的值
+                  gradePlanForm.setFieldsValue({ courseIds });
+                } else {
+                  // 如果没有关联的课程，清空课程选择字段
+                  gradePlanForm.setFieldsValue({ courseIds: [] });
+                }
+              }}
             >
               {versionPlanData.map(vp => (
                 <Select.Option key={vp.id} value={vp.id}>
@@ -873,8 +899,8 @@ const Plan = () => {
 
           <Form.Item
             name="grade"
-            label="年级"
-            rules={[{ required: true, message: "请输入年级" }]}
+            label="名称"
+            rules={[{ required: true, message: "请输入名称" }]}
           >
             <Input placeholder="如：2024级" />
           </Form.Item>
@@ -918,8 +944,8 @@ const Plan = () => {
         <Form form={copyForm} layout="vertical">
           <Form.Item
             name="grade"
-            label="年级"
-            rules={[{ required: true, message: "请输入年级" }]}
+            label="名称"
+            rules={[{ required: true, message: "请输入名称" }]}
           >
             <Input placeholder="如：2024级" />
           </Form.Item>

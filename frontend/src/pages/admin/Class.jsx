@@ -5,13 +5,11 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   message,
   Pagination,
   Select,
   Space,
   Table,
-  Tag,
   Typography,
 } from "antd";
 import {
@@ -29,20 +27,7 @@ const { Option } = Select;
 const columns = [
   { title: "ID", dataIndex: "id", width: 80 },
   { title: "班级名称", dataIndex: "name" },
-  { title: "开设年份", dataIndex: "year" },
-  {
-    title: "所属专业",
-    dataIndex: ["professional", "name"],
-    render: (text) => text || "-",
-  },
-  {
-    title: "已关联课程",
-    dataIndex: "courseIds",
-    render: (ids) => (
-      <Tag color="blue">{ids?.length || 0} 门</Tag>
-    ),
-  },
-  { title: "执行培养方案", dataIndex: ["gradePlan", "versionPlanNumber"], render: (text) => text || "-" },
+  { title: "执行培养方案", dataIndex: ["gradePlan", "grade"], render: (text) => text || "-" },
   {
     title: "创建时间",
     dataIndex: "createdAt",
@@ -138,12 +123,12 @@ const Class = () => {
     setConfirmLoading(true);
     try {
       await addClass(values);
-      message.success("新增成功");
+      messageApi.success("新增成功");
       setAddOpen(false);
       addForm.resetFields();
       refresh();
     } catch {
-      message.error("新增失败");
+      messageApi.error("新增失败");
     } finally {
       setConfirmLoading(false);
     }
@@ -152,12 +137,11 @@ const Class = () => {
   // 修改
   const handleUpdate = () => {
     const row = selectedRowRef.current;
-    if (!row) return message.warning("请先选择一个班级");
+    if (!row) return messageApi.warning("请先选择一个班级");
 
     updateForm.setFieldsValue({
       id: row.id,
       name: row.name,
-      year: row.year,
       gradePlanId: row.gradePlan?.id,
     });
     setUpdateOpen(true);
@@ -167,11 +151,11 @@ const Class = () => {
     setConfirmLoading(true);
     try {
       await updateClass(values);
-      message.success("修改成功");
+      messageApi.success("修改成功");
       setUpdateOpen(false);
       refresh();
     } catch {
-      message.error("修改失败");
+      messageApi.error("修改失败");
     } finally {
       setConfirmLoading(false);
     }
@@ -184,14 +168,14 @@ const Class = () => {
     try {
       const res = await deleteClass(id);
       if (res && (res.code === 200 || res.data)) {
-        message.success("删除成功");
+        messageApi.success("删除成功");
       } else {
-        message.error(res?.message || "删除失败");
+        messageApi.error(res?.message || "删除失败");
       }
       refresh();
     } catch (error) {
       console.error("删除班级失败:", error);
-      message.error(`删除失败: ${error.message || '未知错误'}`);
+      messageApi.error(`删除失败: ${error.message || '未知错误'}`);
     }
   };
 
@@ -245,9 +229,6 @@ const Class = () => {
           <Form.Item name="name" label="班级名称" rules={[{ required: true }]}>
             <Input placeholder="如：2023级软件1班" />
           </Form.Item>
-          <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
-            <InputNumber style={{ width: "100%" }} placeholder="如：2023" />
-          </Form.Item>
           <Form.Item name="gradePlanId" label="执行培养方案" rules={[{ required: true }]}>
             <Select placeholder="请选择培养方案">
               {gradePlanList.map(gp => (
@@ -261,9 +242,6 @@ const Class = () => {
       <FormModal title="修改班级" open={updateOpen} onCancel={() => setUpdateOpen(false)} onSubmit={handleUpdateOk} loading={confirmLoading} form={updateForm}>
           <Form.Item name="name" label="班级名称" rules={[{ required: true }]}>
             <Input />
-          </Form.Item>
-          <Form.Item name="year" label="入学年份" rules={[{ required: true }]}>
-            <InputNumber style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="gradePlanId" label="执行培养方案" rules={[{ required: true }]}>
             <Select placeholder="请选择培养方案">

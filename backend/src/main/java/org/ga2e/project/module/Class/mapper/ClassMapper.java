@@ -7,11 +7,12 @@ import org.ga2e.project.module.Class.dto.ClassUpdateDTO;
 import org.ga2e.project.module.Class.entity.Class;
 import org.ga2e.project.module.Class.mapper.decorator.ClassDecorator;
 import org.ga2e.project.module.Class.resp.ClassResp;
+import org.ga2e.project.module.Professional.mapper.GradePlanMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 
-@Mapper(componentModel = "spring", uses = { ClassDecorator.class })
+@Mapper(componentModel = "spring", uses = { ClassDecorator.class, GradePlanMapper.class })
 public interface ClassMapper {
 
   @Mapping(target = "id", ignore = true)
