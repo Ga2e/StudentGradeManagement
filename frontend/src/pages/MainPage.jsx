@@ -13,13 +13,6 @@ import { useMessage } from "../context/MessageProvider";
 import { HomeOutlined, SettingOutlined, BookOutlined, TeamOutlined, FileTextOutlined, UserOutlined, UsergroupAddOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const adminItems = [
-
-  {
-    key: 'dashboard',
-    label: '个人管理中心',
-    icon: <HomeOutlined />,
-    style: { backgroundColor: '#FFF9C4' },
-  },
   {
     key: 'institute',
     label: '学院管理',
