@@ -62,6 +62,16 @@ export const deleteProfessional = async (id) => {
 };
 
 /**
+ * 批量删除专业
+ */
+export const deleteProfessionalBatch = async (ids) => {
+  const res = await instance.delete(`/professional/batch`, {
+    data: ids
+  });
+  return res.data;
+};
+
+/**
  * 添加培养方案
  */
 export const addProfessionalPlan = async (data) => {

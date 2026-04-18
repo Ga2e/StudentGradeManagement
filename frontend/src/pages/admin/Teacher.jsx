@@ -115,7 +115,7 @@ const Teacher = () => {
 
   const handleSelectChange = (keys, rows) => {
     setSelectedRowKeys(keys);
-    selectedRowRef.current = rows[0] || null;
+    selectedRowRef.current = rows || [];
   };
 
   // 新增
@@ -198,13 +198,29 @@ const Teacher = () => {
 
   // 删除
   const handleDelete = async () => {
-    const id = selectedRowKeys[0];
+    if (selectedRowKeys.length === 0) {
+      return messageApi.warning("请先选择要删除的教师");
+    }
+    
     try {
-      await deleteTeacher(id);
-      messageApi.success("删除成功");
+      // 批量删除，逐个删除每个选中的教师
+      const deletePromises = selectedRowKeys.map(async (key) => {
+        const res = await deleteTeacher(key);
+        return res;
+      });
+      
+      const results = await Promise.all(deletePromises);
+      
+      // 检查删除结果
+      const successCount = results.filter(res => res && (res.code === 200 || res.data)).length;
+      if (successCount > 0) {
+        messageApi.success(`成功删除 ${successCount} 个教师`);
+      }
+      
       refresh();
-    } catch {
-      messageApi.error("删除失败");
+    } catch (error) {
+      console.error("批量删除教师失败:", error);
+      messageApi.error(`删除失败: ${error.message || '未知错误'}`);
     }
   };
 
@@ -247,7 +263,7 @@ const Teacher = () => {
         {/* 表格 */}
         <div style={{ flex: 1, overflow: "hidde", padding: "16px 24px" }}>
           <Table
-            rowSelection={{ type: "radio", selectedRowKeys, onChange: handleSelectChange }}
+            rowSelection={{ type: "checkbox", selectedRowKeys, onChange: handleSelectChange }}
             columns={columns}
             dataSource={tableData}
             loading={loading}

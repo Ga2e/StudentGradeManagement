@@ -15,6 +15,8 @@ import {
 import {
   addProfessional,
   deleteProfessional,
+  deleteProfessionalBatch,
+  getAllProfessional,
   getProfessionalPage,
   updateProfessional,
 } from "../../service/professional.js";
@@ -135,11 +137,13 @@ const Professional = () => {
 
 
 
-  // 表格单选
-  const handleSelectChange = (keys, rows) => {
-    setSelectedRowKeys(keys);
-    selectedRowRef.current = rows[0] || null;
-    console.log(selectedRowRef.current)
+  // 表格多选
+  const handleSelectChange = (keys, selectedRows) => {
+    // 提取选中行的ID数组
+    const ids = selectedRows.map(row => row.id);
+    setSelectedRowKeys(ids);
+    selectedRowRef.current = selectedRows || [];
+    console.log('选中的ID:', ids);
   };
 
   // 加载院校信息 
@@ -250,22 +254,49 @@ const Professional = () => {
 
   // 删除
   const handleDelete = async (id) => {
-    if (!id) {
-      messageApi.warning("请先选择一条专业");
-      return;
-    }
-    try {
-      const res = await deleteProfessional(id);
-      console.log(res)
-      if (res && (res.code === 200 || res.data)) {
-        messageApi.success("删除成功");
-      } else {
-        messageApi.error(res?.message || "删除失败");
+    // 如果传入了id，说明是从操作列点击的删除按钮
+    if (id) {
+      try {
+        console.log('删除单个专业，ID:', id);
+        const res = await deleteProfessional(id);
+        console.log('删除单个专业响应:', res);
+        if (res && (res.code === 200 || res.data)) {
+          messageApi.success("删除成功");
+        } else {
+          messageApi.error(res?.message || "删除失败");
+        }
+        refresh();
+      } catch (error) {
+        console.error("删除专业失败:", error);
+        messageApi.error(`删除失败: ${error.message || '未知错误'}`);
       }
-      refresh();
-    } catch (error) {
-      console.error("删除专业失败:", error);
-      messageApi.error(`删除失败: ${error.message || '未知错误'}`);
+    } else {
+      // 否则，说明是批量删除
+      if (!selectedRowRef.current || selectedRowRef.current.length === 0) {
+        messageApi.warning("请先选择要删除的专业");
+        return;
+      }
+      
+      try {
+        // 从选中的行中提取ID
+        const selectedIds = selectedRowRef.current.map(row => row.id);
+        console.log('批量删除专业，ID列表:', selectedIds);
+        
+        // 使用批量删除接口
+        const res = await deleteProfessionalBatch(selectedIds);
+        console.log('批量删除专业响应:', res);
+        
+        if (res && (res.code === 200 || res.data)) {
+          messageApi.success(`成功删除 ${selectedIds.length} 个专业`);
+        } else {
+          messageApi.error(res?.message || "删除失败");
+        }
+        
+        refresh();
+      } catch (error) {
+        console.error("批量删除专业失败:", error);
+        messageApi.error(`删除失败: ${error.message || '未知错误'}`);
+      }
     }
   };
 
@@ -291,12 +322,20 @@ const Professional = () => {
             <Button type="primary" onClick={handleAdd}>
               新增专业
             </Button>
+            <Button danger onClick={handleDelete} disabled={selectedRowKeys.length === 0}>
+              批量删除
+            </Button>
           </Space>
         </div>
 
         {/* 表格区域 */}
         <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
           <Table
+            rowSelection={{
+              type: "checkbox",
+              selectedRowKeys: selectedRowKeys,
+              onChange: (keys, selectedRows) => handleSelectChange(keys, selectedRows),
+            }}
             columns={columns}
             dataSource={tableData}
             loading={loading}
