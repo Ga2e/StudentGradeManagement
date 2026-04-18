@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ProfessionalAddDTO {
 
+  private String code;
   private String name;
 
   private Long instituteId;

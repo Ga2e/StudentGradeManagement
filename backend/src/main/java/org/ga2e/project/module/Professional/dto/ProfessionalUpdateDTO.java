@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class ProfessionalUpdateDTO {
   private Long id;
 
+  private String code;
   private String name;
 
   private Long instituteId;

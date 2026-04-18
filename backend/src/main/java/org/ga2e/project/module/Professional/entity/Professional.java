@@ -32,6 +32,9 @@ public class Professional {
   @Column(name = "name", nullable = false)
   private String name;
 
+  @Column(name = "code", nullable = false, unique = true)
+  private String code;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "institute_id")
   private Institute institute;

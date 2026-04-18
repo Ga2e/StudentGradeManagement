@@ -8,6 +8,7 @@ import {
   message,
   Modal,
   Pagination,
+  Select,
   Space,
   Table,
   Typography,
@@ -24,7 +25,6 @@ import FormModal from "../../component/FormModal";
 const Institute = () => {
   // ========== 选中行（只读）==========
   const selectedRowRef = useRef(null);                // 永远保存最新选中的那一整行
-  const [selectRowKeys, setSelectRowKeys] = useState([]); // 只给 radio 勾选状态用
 
   // ========== 表单实例==========
   const [addForm] = Form.useForm();      // 新增用的
@@ -45,7 +45,9 @@ const Institute = () => {
   const [addModelOpen, setAddModelOpen] = useState(false);
   const [updateModelOpen, setUpdateModelOpen] = useState(false);
 
-  const hasSelected = selectRowKeys.length > 0;
+  // 搜索相关状态
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState('code'); // code: 编号, name: 名称
 
   // ========== 表格数据处理 ==========
   const formattedData = useMemo(() => {
@@ -56,23 +58,23 @@ const Institute = () => {
   }, [data]);
 
   // ========== 刷新数据 ==========
-  const refresh = async () => {
+  const refresh = async (page = pageNum, keyword = searchKeyword, type = searchType) => {
     setLoading(true);
     try {
-      const res = await getPages({ pageNum: pageNum - 1, pageSize });
+      const res = await getPages({ 
+        pageNum: page - 1, 
+        pageSize,
+        keyword: keyword,
+        type: type
+      });
       setData(res.content);
       setTotal(res.totalElements);
+      setPageNum(page);
     } catch (error) {
       messageApi.error("获取数据失败：" + (error.message || "未知错误"));
     } finally {
       setLoading(false);
     }
-  };
-
-  // ========== 表格选择回调 ==========
-  const handleSelectionChange = (keys, rows) => {
-    setSelectRowKeys(keys);
-    selectedRowRef.current = rows || [];
   };
 
   // ========== 新增 ==========
@@ -130,43 +132,29 @@ const Institute = () => {
     }
   };
 
-  // ========== 批量删除 ==========
-  const handleBatchDelete = async () => {
-    if (selectRowKeys.length === 0) {
-      return messageApi.warning("请先选择要删除的学院");
-    }
-    
-    try {
-      // 批量删除，逐个删除每个选中的学院
-      const deletePromises = selectRowKeys.map(async (key) => {
-        const resp = await deleteInstituteById(key);
-        return resp;
-      });
-      
-      const results = await Promise.all(deletePromises);
-      
-      // 检查删除结果
-      const successCount = results.filter(resp => resp && resp.code === 200).length;
-      if (successCount > 0) {
-        messageApi.success(`成功删除 ${successCount} 个学院`);
-      }
-      
-      await refresh();
-    } catch (error) {
-      messageApi.error("批量删除失败：" + (error.message || "未知错误"));
-    }
+  // 搜索处理
+  const handleSearch = () => {
+    refresh(1); // 搜索时从第一页开始
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    setSearchKeyword('');
+    setSearchType('code');
+    refresh(1, '', 'code'); // 重置时从第一页开始，使用空的搜索参数
   };
 
   // ========== 修改 ==========
   const updateAction = (record) => {
     selectedRowRef.current = record;
-    const { name, description, createdAt } = record;
+    const { code, name, description, createdAt } = record;
     let formattedCreatedAt = null;
     if (createdAt) {
       const date = new Date(createdAt);
       formattedCreatedAt = date.toISOString().slice(0, 16);
     }
     updateForm.setFieldsValue({
+      code,
       name,
       description,
       createdAt: formattedCreatedAt,
@@ -193,13 +181,19 @@ const Institute = () => {
     }
   };
 
+
+
   // ========== 页面加载 & 分页切换 ==========
   useEffect(() => {
     refresh();
-  }, [pageNum]);
+  }, [pageNum, searchKeyword, searchType]);
 
   // ========== 表格列配置 ==========
   const columns = [
+    {
+      title: "学院编号",
+      dataIndex: "code",
+    },
     {
       title: "学院名称",
       dataIndex: "name",
@@ -238,6 +232,13 @@ const Institute = () => {
       >
         <Form form={addForm} layout="vertical">
           <Form.Item
+            name="code"
+            label="学院编号"
+            rules={[{ required: true, message: "请输入学院编号" }]}
+          >
+            <Input placeholder="请输入学院编号" />
+          </Form.Item>
+          <Form.Item
             name="name"
             label="学院名称"
             rules={[{ required: true, message: "请输入学院名称" }]}
@@ -273,6 +274,13 @@ const Institute = () => {
         loading={confirmLoading}
       >
         <Form form={updateForm} layout="vertical">
+          <Form.Item
+            name="code"
+            label="学院编号"
+            rules={[{ required: true, message: "请输入学院编号" }]}
+          >
+            <Input placeholder="请输入学院编号" />
+          </Form.Item>
           <Form.Item
             name="name"
             label="学院名称"
@@ -313,6 +321,7 @@ const Institute = () => {
         width={600}
       >
         <Descriptions bordered column={1}>
+          <Descriptions.Item label="学院编号">{detailData.code || '-'}</Descriptions.Item>
           <Descriptions.Item label="学院名称">{detailData.name || '-'}</Descriptions.Item>
           <Descriptions.Item label="学院简介">{detailData.description || '-'}</Descriptions.Item>
           <Descriptions.Item label="创建时间">
@@ -341,26 +350,35 @@ const Institute = () => {
 
       {/* 页面主体 */}
       <Flex vertical style={{ width: "100%", height: "100vh" }}>
-        <Flex justify="space-between" align="center" style={{ height: 64, flexShrink: 0, padding: "0 24px" }}>
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            学院管理
-          </Typography.Title>
-          <Space>
-            <Button type="primary" onClick={addAction}>
-              新增学院
-            </Button>
-            <Button danger onClick={() => handleBatchDelete()} disabled={selectRowKeys.length === 0}>
-              批量删除
-            </Button>
-          </Space>
-        </Flex>
+        <div style={{ padding: "16px 24px", background: "#fff", borderBottom: "1px solid #f0f0f0", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <Typography.Title level={4} style={{ margin: 0 }}>学院管理</Typography.Title>
+            <Space>
+              <Button type="primary" onClick={addAction}>新增学院</Button>
+            </Space>
+          </div>
+          {/* 搜索框 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Select 
+              value={searchType} 
+              onChange={setSearchType} 
+              style={{ width: 120 }}
+            >
+              <Select.Option value="code">编号</Select.Option>
+              <Select.Option value="name">名称</Select.Option>
+            </Select>
+            <Input 
+              placeholder="请输入搜索关键词" 
+              value={searchKeyword} 
+              onChange={(e) => setSearchKeyword(e.target.value)} 
+              style={{ width: 300 }}
+            />
+            <Button type="primary" onClick={handleSearch}>查找</Button>
+            <Button onClick={handleReset}>重置</Button>
+          </div>
+        </div>
 
         <Table
-          rowSelection={{
-            type: "checkbox",
-            selectedRowKeys: selectRowKeys,
-            onChange: handleSelectionChange,
-          }}
           columns={columns}
           dataSource={formattedData}
           loading={loading}

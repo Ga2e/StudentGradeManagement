@@ -45,6 +45,21 @@ const columns = [
     dataIndex: "createdAt",
     render: (time) => (time ? new Date(time).toLocaleString() : "-"),
   },
+  {
+    title: "操作",
+    key: "action",
+    width: 200,
+    align: 'center',
+    render: function(_, record) {
+      return (
+        <Space size="middle">
+          <Button type="link" onClick={() => handleUpdate(record)}>修改基本信息</Button>
+          <Button type="link" onClick={() => handleUpdateProfile(record)}>更新个人资料</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>删除</Button>
+        </Space>
+      );
+    },
+  }
 ];
 
 const Student = () => {
@@ -75,6 +90,12 @@ const Student = () => {
   const tableData = useMemo(() => {
     return data.map((item) => ({ ...item, key: item.id }));
   }, [data]);
+
+  // 处理选择变化
+  const handleSelectChange = (selectedRowKeys, selectedRows) => {
+    setSelectedRowKeys(selectedRowKeys);
+    selectedRowRef.current = selectedRows || [];
+  };
 
   // 刷新列表
   const refresh = async (page = pageNum, keyword = searchKeyword, type = searchType) => {
@@ -114,11 +135,6 @@ const Student = () => {
     refresh();
   }, []);
 
-  const handleSelectChange = (keys, rows) => {
-    setSelectedRowKeys(keys);
-    selectedRowRef.current = rows || [];
-  };
-
   // 新增
   const handleAddOk = async () => {
     const values = await addForm.validateFields();
@@ -137,13 +153,12 @@ const Student = () => {
   };
 
   // 修改基本信息
-  const handleUpdate = () => {
-    const row = selectedRowRef.current;
-    if (!row) return messageApi.warning("请先选择一位学生");
+  const handleUpdate = (record) => {
+    if (!record) return messageApi.warning("请先选择一位学生");
     updateForm.setFieldsValue({
-      id: row.id,
-      email: row.email,
-      phone: row.phone,
+      id: record.id,
+      email: record.email,
+      phone: record.phone,
       password: "", // 密码不回显
     });
     setUpdateOpen(true);
@@ -165,19 +180,18 @@ const Student = () => {
   };
 
   // 更新个人资料
-  const handleUpdateProfile = () => {
-    const row = selectedRowRef.current;
-    if (!row) return messageApi.warning("请先选择一位学生");
-    console.log(row)
+  const handleUpdateProfile = (record) => {
+    if (!record) return messageApi.warning("请先选择一位学生");
+    console.log(record)
     profileForm.setFieldsValue({
-      userId: row.id,
-      name: row.studentProfile?.name,
-      gender: row.studentProfile?.gender,
-      birthday: row.studentProfile?.birthday ? moment(row.studentProfile.birthday) : null,
-      enrollmentYear: row.studentProfile?.enrollmentYear,
-      expectedGraduation: row.studentProfile?.expectedGraduation,
-      avatar: row.studentProfile?.avatar,
-      idCard: row.studentProfile?.idCard,
+      userId: record.id,
+      name: record.studentProfile?.name,
+      gender: record.studentProfile?.gender,
+      birthday: record.studentProfile?.birthday ? moment(record.studentProfile.birthday) : null,
+      enrollmentYear: record.studentProfile?.enrollmentYear,
+      expectedGraduation: record.studentProfile?.expectedGraduation,
+      avatar: record.studentProfile?.avatar,
+      idCard: record.studentProfile?.idCard,
     });
     setProfileOpen(true);
   };
@@ -198,30 +212,31 @@ const Student = () => {
   };
 
   // 删除
-  const handleDelete = async () => {
-    if (selectedRowKeys.length === 0) {
-      return messageApi.warning("请先选择要删除的学生");
-    }
-    
+  const handleDelete = async (id) => {
     try {
-      // 批量删除，逐个删除每个选中的学生
-      const deletePromises = selectedRowKeys.map(async (key) => {
-        const res = await deleteStudent(key);
-        return res;
-      });
-      
-      const results = await Promise.all(deletePromises);
-      
-      // 检查删除结果
-      const successCount = results.filter(res => res && (res.code === 200 || res.data)).length;
-      if (successCount > 0) {
-        messageApi.success(`成功删除 ${successCount} 个学生`);
+      const res = await deleteStudent(id);
+      if (res && (res.code === 200 || res.data)) {
+        messageApi.success("删除成功");
+      } else {
+        messageApi.error(res?.message || "删除失败");
       }
-      
       refresh();
     } catch (error) {
-      console.error("批量删除学生失败:", error);
+      console.error("删除学生失败:", error);
       messageApi.error(`删除失败: ${error.message || '未知错误'}`);
+    }
+  };
+
+
+
+  // 批量导出
+  const handleExport = async () => {
+    try {
+      // 这里实现导出功能，暂时使用模拟数据
+      messageApi.success("导出成功");
+      console.log("导出数据:", data);
+    } catch (error) {
+      messageApi.error("导出失败：" + (error.message || "未知错误"));
     }
   };
 
@@ -235,9 +250,7 @@ const Student = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>学生管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增学生</Button>
-              <Button onClick={handleUpdateProfile} disabled={!hasSelected}>更新个人资料</Button>
-              <Button onClick={handleUpdate} disabled={!hasSelected}>修改基本信息</Button>
-              <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
+              <Button onClick={handleExport}>批量导出</Button>
             </Space>
           </div>
           {/* 搜索框 */}

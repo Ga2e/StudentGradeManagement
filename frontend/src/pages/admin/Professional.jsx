@@ -30,6 +30,10 @@ const columns = [
     width: 100,
   },
   {
+    title: "专业编号",
+    dataIndex: "code",
+  },
+  {
     title: "专业名称",
     dataIndex: "name",
   },
@@ -62,7 +66,6 @@ const columns = [
 const Professional = () => {
   // 选中的行（只读）
   const selectedRowRef = useRef(null)
-  const [selectedRowKeys, setSelectedRowKeys] = useState([])
   const { messageApi } = useMessage()
   
   // 表单实例
@@ -84,7 +87,9 @@ const Professional = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
 
-  const hasSelected = selectedRowKeys.length > 0;
+  // 搜索相关状态
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState('code'); // code: 编号, name: 名称
 
   // 表格数据加 key
   const tableData = useMemo(() => {
@@ -96,12 +101,17 @@ const Professional = () => {
   }, [data]);
 
   // 刷新专业数据
-  const refresh = async (page = pageNum) => {
-    console.log("开始刷新专业数据，页码:", page);
+  const refresh = async (page = pageNum, keyword = searchKeyword, type = searchType) => {
+    console.log("开始刷新专业数据，页码:", page, "关键词:", keyword, "搜索类型:", type);
     setLoading(true);
 
     try {
-      const res = await getProfessionalPage({ pageNum: page, pageSize: 10 });
+      const res = await getProfessionalPage({ 
+        pageNum: page, 
+        pageSize: 10,
+        keyword: keyword,
+        type: type
+      });
       console.log("获取专业数据结果:", res);
       // 检查响应数据结构
       if (res && typeof res === 'object') {
@@ -118,7 +128,6 @@ const Professional = () => {
       }
       setPageNum(page);
       // 刷新后清空选择
-      setSelectedRowKeys([]);
       selectedRowRef.current = null;
     } catch (err) {
       console.error("加载专业数据失败:", err);
@@ -132,19 +141,7 @@ const Professional = () => {
 
   useEffect(() => {
     refresh();
-  }, []);
-
-
-
-
-  // 表格多选
-  const handleSelectChange = (keys, selectedRows) => {
-    // 提取选中行的ID数组
-    const ids = selectedRows.map(row => row.id);
-    setSelectedRowKeys(ids);
-    selectedRowRef.current = selectedRows || [];
-    console.log('选中的ID:', ids);
-  };
+  }, [pageNum, searchKeyword, searchType]);
 
   // 加载院校信息 
   const instituteLoad = async () => {
@@ -214,6 +211,7 @@ const Professional = () => {
       }
       selectedRowRef.current = record;
       updateForm.setFieldsValue({
+        code: record.code,
         name: record.name,
         instituteId: record.institute?.id,  // 关键！
       });
@@ -232,6 +230,7 @@ const Professional = () => {
     try {
       const res = await updateProfessional({
         id: selectedRowRef.current.id,
+        code: values.code,
         name: values.name,
         instituteId: values.instituteId
       });
@@ -254,51 +253,35 @@ const Professional = () => {
 
   // 删除
   const handleDelete = async (id) => {
-    // 如果传入了id，说明是从操作列点击的删除按钮
-    if (id) {
-      try {
-        console.log('删除单个专业，ID:', id);
-        const res = await deleteProfessional(id);
-        console.log('删除单个专业响应:', res);
-        if (res && (res.code === 200 || res.data)) {
-          messageApi.success("删除成功");
-        } else {
-          messageApi.error(res?.message || "删除失败");
-        }
-        refresh();
-      } catch (error) {
-        console.error("删除专业失败:", error);
-        messageApi.error(`删除失败: ${error.message || '未知错误'}`);
+    try {
+      console.log('删除单个专业，ID:', id);
+      const res = await deleteProfessional(id);
+      console.log('删除单个专业响应:', res);
+      if (res && (res.code === 200 || res.data)) {
+        messageApi.success("删除成功");
+      } else {
+        messageApi.error(res?.message || "删除失败");
       }
-    } else {
-      // 否则，说明是批量删除
-      if (!selectedRowRef.current || selectedRowRef.current.length === 0) {
-        messageApi.warning("请先选择要删除的专业");
-        return;
-      }
-      
-      try {
-        // 从选中的行中提取ID
-        const selectedIds = selectedRowRef.current.map(row => row.id);
-        console.log('批量删除专业，ID列表:', selectedIds);
-        
-        // 使用批量删除接口
-        const res = await deleteProfessionalBatch(selectedIds);
-        console.log('批量删除专业响应:', res);
-        
-        if (res && (res.code === 200 || res.data)) {
-          messageApi.success(`成功删除 ${selectedIds.length} 个专业`);
-        } else {
-          messageApi.error(res?.message || "删除失败");
-        }
-        
-        refresh();
-      } catch (error) {
-        console.error("批量删除专业失败:", error);
-        messageApi.error(`删除失败: ${error.message || '未知错误'}`);
-      }
+      refresh();
+    } catch (error) {
+      console.error("删除专业失败:", error);
+      messageApi.error(`删除失败: ${error.message || '未知错误'}`);
     }
   };
+
+  // 搜索处理
+  const handleSearch = () => {
+    refresh(1); // 搜索时从第一页开始
+  };
+
+  // 重置搜索
+  const handleReset = () => {
+    setSearchKeyword('');
+    setSearchType('code');
+    refresh(1, '', 'code'); // 重置时从第一页开始，使用空的搜索参数
+  };
+
+
 
   return (
     <>
@@ -309,33 +292,39 @@ const Professional = () => {
             padding: "16px 24px",
             background: "#fff",
             borderBottom: "1px solid #f0f0f0",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
             flexShrink: 0,
           }}
         >
-          <Typography.Title level={4} style={{ margin: 0 }}>
-            专业管理
-          </Typography.Title>
-          <Space>
-            <Button type="primary" onClick={handleAdd}>
-              新增专业
-            </Button>
-            <Button danger onClick={handleDelete} disabled={selectedRowKeys.length === 0}>
-              批量删除
-            </Button>
-          </Space>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <Typography.Title level={4} style={{ margin: 0 }}>专业管理</Typography.Title>
+            <Space>
+              <Button type="primary" onClick={handleAdd}>新增专业</Button>
+            </Space>
+          </div>
+          {/* 搜索框 */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Select 
+              value={searchType} 
+              onChange={setSearchType} 
+              style={{ width: 120 }}
+            >
+              <Select.Option value="code">编号</Select.Option>
+              <Select.Option value="name">名称</Select.Option>
+            </Select>
+            <Input 
+              placeholder="请输入搜索关键词" 
+              value={searchKeyword} 
+              onChange={(e) => setSearchKeyword(e.target.value)} 
+              style={{ width: 300 }}
+            />
+            <Button type="primary" onClick={handleSearch}>查找</Button>
+            <Button onClick={handleReset}>重置</Button>
+          </div>
         </div>
 
         {/* 表格区域 */}
         <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
           <Table
-            rowSelection={{
-              type: "checkbox",
-              selectedRowKeys: selectedRowKeys,
-              onChange: (keys, selectedRows) => handleSelectChange(keys, selectedRows),
-            }}
             columns={columns}
             dataSource={tableData}
             loading={loading}
@@ -379,6 +368,13 @@ const Professional = () => {
       >
         <Form form={addForm} layout="vertical">
           <Form.Item
+            name="code"
+            label="专业编号"
+            rules={[{ required: true, message: "请输入专业编号" }]}
+          >
+            <Input placeholder="请输入专业编号" />
+          </Form.Item>
+          <Form.Item
             name="name"
             label="专业名称"
             rules={[{ required: true, message: "请输入专业名称" }]}
@@ -405,6 +401,13 @@ const Professional = () => {
         loading={confirmLoading}
       >
         <Form form={updateForm} layout="vertical">
+          <Form.Item
+            name="code"
+            label="专业编号"
+            rules={[{ required: true, message: "请输入专业编号" }]}
+          >
+            <Input placeholder="请输入专业编号" />
+          </Form.Item>
           <Form.Item
             name="name"
             label="专业名称"

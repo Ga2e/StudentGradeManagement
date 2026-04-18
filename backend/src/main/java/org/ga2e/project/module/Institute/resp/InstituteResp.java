@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class InstituteResp {
   private Long id;
 
+  private String code;
   private String name;
   private String description;
 

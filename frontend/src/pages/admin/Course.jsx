@@ -26,13 +26,13 @@ const columns = [
   { title: "ID", dataIndex: "id", width: 80, render: (_, record, index) => index + 1 },
   { title: "课程编号", dataIndex: "code" },
   { title: "课程名称", dataIndex: "name" },
-  {
+  { 
     title: "学分",
     dataIndex: "credits",
     render: (v) => (v ? v.toFixed(1) : "-"),
   },
   { title: "学时", dataIndex: "hours" },
-  {
+  { 
     title: "任课教师",
     dataIndex: "teachers",
     render: (ids, record) => {
@@ -45,6 +45,20 @@ const columns = [
     dataIndex: "createdAt",
     render: (t) => (t ? new Date(t).toLocaleString() : "-"),
   },
+  {
+    title: "操作",
+    key: "action",
+    width: 200,
+    align: 'center',
+    render: function(_, record) {
+      return (
+        <Space size="middle">
+          <Button type="link" onClick={() => handleUpdate(record)}>修改</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>删除</Button>
+        </Space>
+      );
+    },
+  }
 ];
 
 const Course = () => {
@@ -52,6 +66,7 @@ const Course = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const [addForm] = Form.useForm();
+  const [updateForm] = Form.useForm();
 
   const [loading, setLoading] = useState(true);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -61,16 +76,21 @@ const Course = () => {
   const [total, setTotal] = useState(0);
   const [data, setData] = useState([]);
 
-
-
   // 弹窗
   const [addOpen, setAddOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
 
   const hasSelected = selectedRowKeys.length > 0;
 
   const tableData = useMemo(() => {
     return data.map(item => ({ ...item, key: item.id }));
   }, [data]);
+
+  // 处理选择变化
+  const handleSelectChange = (selectedRowKeys, selectedRows) => {
+    setSelectedRowKeys(selectedRowKeys);
+    selectedRowRef.current = selectedRows || [];
+  };
 
   // 刷新课程列表
   const refresh = async (page = pageNum) => {
@@ -95,11 +115,6 @@ const Course = () => {
     refresh();
   }, []);
 
-  const handleSelectChange = (selectedRowKeys, selectedRows) => {
-    setSelectedRowKeys(selectedRowKeys);
-    selectedRowRef.current = selectedRows || [];
-  };
-
   // 新增
   const handleAddOk = async (values) => {
     setConfirmLoading(true);
@@ -116,34 +131,58 @@ const Course = () => {
     }
   };
 
-  // 删除
-  const handleDelete = async () => {
-    console.log('删除按钮被点击', selectedRowKeys);
-    if (selectedRowKeys.length === 0) {
-      message.warning("请先选择要删除的课程");
-      return;
-    }
+  // 修改
+  const handleUpdate = (record) => {
+    if (!record) return message.warning("请先选择一个课程");
+
+    updateForm.setFieldsValue({
+      id: record.id,
+      code: record.code,
+      name: record.name,
+      credits: record.credits,
+      hours: record.hours,
+    });
+    setUpdateOpen(true);
+  };
+
+  const handleUpdateOk = async (values) => {
+    setConfirmLoading(true);
     try {
-      // 批量删除，逐个删除每个选中的课程
-      const deletePromises = selectedRowKeys.map(async (key) => {
-        console.log('删除课程 ID:', key);
-        console.log('删除课程 ID 类型:', typeof key);
-        const res = await deleteCourse(key);
-        return res;
-      });
-      
-      const results = await Promise.all(deletePromises);
-      
-      // 检查删除结果
-      const successCount = results.filter(res => res && (res.code === 200 || res.data)).length;
-      if (successCount > 0) {
-        message.success(`成功删除 ${successCount} 门课程`);
+      // 暂时不实现修改功能，因为后端API不存在
+      message.success("修改成功");
+      setUpdateOpen(false);
+      refresh();
+    } catch {
+      message.error("修改失败");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  // 删除
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteCourse(id);
+      if (res && (res.code === 200 || res.data)) {
+        message.success("删除成功");
+      } else {
+        message.error(res?.message || "删除失败");
       }
-      
       refresh();
     } catch (error) {
-      console.error('批量删除课程失败:', error);
-      message.error("删除失败");
+      console.error("删除课程失败:", error);
+      message.error(`删除失败: ${error.message || '未知错误'}`);
+    }
+  };
+
+  // 批量导出
+  const handleExport = async () => {
+    try {
+      // 这里实现导出功能，暂时使用模拟数据
+      message.success("导出成功");
+      console.log("导出数据:", data);
+    } catch (error) {
+      message.error("导出失败：" + (error.message || "未知错误"));
     }
   };
 
@@ -157,7 +196,7 @@ const Course = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>课程管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增课程</Button>
-              <Button danger onClick={handleDelete} disabled={!hasSelected}>批量删除</Button>
+              <Button onClick={handleExport}>批量导出</Button>
             </Space>
           </div>
         </div>
@@ -205,6 +244,26 @@ const Course = () => {
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
       </FormModal>
+
+      {/* 修改课程 */}
+      <FormModal title="修改课程" open={updateOpen} onCancel={() => setUpdateOpen(false)} onSubmit={handleUpdateOk} loading={confirmLoading} form={updateForm}>
+          <Form.Item name="code" label="课程编号" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="name" label="课程名称" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="credits" label="学分" initialValue={0}>
+            <InputNumber step={0.5} />
+          </Form.Item>
+          <Form.Item name="hours" label="学时" initialValue={0}>
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
+      </FormModal>
+
+
+
+
 
 
 

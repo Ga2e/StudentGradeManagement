@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class ProfessionalResp {
   private Long id;
 
+  private String code;
   private String name;
 
   private InstituteResp institute;

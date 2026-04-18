@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class InstituteAddDTO {
+  private String code;
   private String name;
   private String description;
   private String createdAt;

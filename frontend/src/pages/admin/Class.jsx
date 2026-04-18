@@ -33,6 +33,20 @@ const columns = [
     dataIndex: "createdAt",
     render: (time) => (time ? new Date(time).toLocaleString() : "-"),
   },
+  {
+    title: "操作",
+    key: "action",
+    width: 200,
+    align: 'center',
+    render: function(_, record) {
+      return (
+        <Space size="middle">
+          <Button type="link" onClick={() => handleUpdate(record)}>修改</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>删除</Button>
+        </Space>
+      );
+    },
+  }
 ];
 
 const Class = () => {
@@ -62,6 +76,12 @@ const Class = () => {
   const tableData = useMemo(() => {
     return data.map((item) => ({ ...item, key: item.id }));
   }, [data]);
+
+  // 处理选择变化
+  const handleSelectChange = (selectedRowKeys, selectedRows) => {
+    setSelectedRowKeys(selectedRowKeys);
+    selectedRowRef.current = selectedRows || [];
+  };
 
   // 加载培养方案列表（用于下拉）
   const loadGradePlans = async () => {
@@ -113,11 +133,6 @@ const Class = () => {
     }
   }, [gradePlanList]);
 
-  const handleSelectChange = (keys, rows) => {
-    setSelectedRowKeys(keys);
-    selectedRowRef.current = rows[0] || null;
-  };
-
   // 新增
   const handleAddOk = async (values) => {
     setConfirmLoading(true);
@@ -135,14 +150,13 @@ const Class = () => {
   };
 
   // 修改
-  const handleUpdate = () => {
-    const row = selectedRowRef.current;
-    if (!row) return messageApi.warning("请先选择一个班级");
+  const handleUpdate = (record) => {
+    if (!record) return messageApi.warning("请先选择一个班级");
 
     updateForm.setFieldsValue({
-      id: row.id,
-      name: row.name,
-      gradePlanId: row.gradePlan?.id,
+      id: record.id,
+      name: record.name,
+      gradePlanId: record.gradePlan?.id,
     });
     setUpdateOpen(true);
   };
@@ -162,9 +176,7 @@ const Class = () => {
   };
 
   // 删除
-  const handleDelete = async () => {
-    const id = selectedRowKeys[0];
-
+  const handleDelete = async (id) => {
     try {
       const res = await deleteClass(id);
       if (res && (res.code === 200 || res.data)) {
@@ -179,6 +191,19 @@ const Class = () => {
     }
   };
 
+
+
+  // 批量导出
+  const handleExport = async () => {
+    try {
+      // 这里实现导出功能，暂时使用模拟数据
+      messageApi.success("导出成功");
+      console.log("导出数据:", data);
+    } catch (error) {
+      messageApi.error("导出失败：" + (error.message || "未知错误"));
+    }
+  };
+
   return (
     <>
       {contextHolder}
@@ -190,8 +215,7 @@ const Class = () => {
             <Typography.Title level={4} style={{ margin: 0 }}>班级管理</Typography.Title>
             <Space>
               <Button type="primary" onClick={() => setAddOpen(true)}>新增班级</Button>
-              <Button onClick={handleUpdate} disabled={!hasSelected}>修改</Button>
-              <Button danger onClick={handleDelete} disabled={!hasSelected}>删除</Button>
+              <Button onClick={handleExport}>批量导出</Button>
             </Space>
           </div>
         </div>
@@ -199,7 +223,7 @@ const Class = () => {
         {/* 表格 */}
         <div style={{ flex: 1, overflow: "hidden", padding: "16px 24px" }}>
           <Table
-            rowSelection={{ type: "radio", selectedRowKeys, onChange: handleSelectChange }}
+            rowSelection={{ type: "checkbox", selectedRowKeys, onChange: handleSelectChange }}
             columns={columns}
             dataSource={tableData}
             loading={loading}
@@ -251,6 +275,7 @@ const Class = () => {
             </Select>
           </Form.Item>
       </FormModal>
+
 
 
 
